@@ -141,6 +141,9 @@ tbody tr:hover td{background:var(--surface2)}
   main{padding:16px 12px 60px}
 }
 </style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <nav>
@@ -155,6 +158,7 @@ tbody tr:hover td{background:var(--surface2)}
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>
     Export
   </button>
+  <div id="sync-status" style="font-size:11px;font-weight:600;color:#1D6A2C;padding:4px 10px;background:rgba(29,106,44,0.08);border-radius:99px;white-space:nowrap">✓ Synced</div>
 </nav>
 <main>
 
@@ -359,7 +363,7 @@ tbody tr:hover td{background:var(--surface2)}
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const CATS=['Rent','Utilities','Groceries','Gifting','Travel','Flex','Others','Debt','House','Car'];
 const SOURCES=['Bonus','Chartis','Freelance','Gift','MN DHS','OHA','Others','Refund','Carry Over'];
-const SK='financehub_v12';
+const SK='financehub_v13';
 const DEF_ALLOC={roth:625,stocks:400,bt:200,givingPct:10,famEM:24.78,famInv:24.78,pEM:12.39,pRE:6.48,pChk:6.34};
 
 let db={budgets:[],income:[],expenses:[],people:['Maia','Sage'],distPeople:['Maia','Sage'],checks:{}};
@@ -836,9 +840,93 @@ function init(){
   ['ef-year','df-year','sf-year','ex-year'].forEach(id=>addYearsFilter(id));
 }
 
-load();init();
-setPerson(db.people[0]||'Maia');
-renderPills();refreshOverview();
+// ── FIREBASE REALTIME SYNC ──────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDQunH4MCLC-TvzJ0aF__v45sHhFBavHW8",
+  authDomain: "eeyoowo.firebaseapp.com",
+  databaseURL: "https://eeyoowo-default-rtdb.firebaseio.com",
+  projectId: "eeyoowo",
+  storageBucket: "eeyoowo.firebasestorage.app",
+  messagingSenderId: "584454146486",
+  appId: "1:584454146486:web:fdd786aa27a11dedc99917"
+};
+firebase.initializeApp(firebaseConfig);
+const fbdb = firebase.database();
+const FB_PATH = 'financehub/data';
+let _fbListenerOn = false;
+
+function setSyncStatus(s){
+  const el=document.getElementById('sync-status');if(!el)return;
+  const map={syncing:['↑ Syncing...','#D97706'],synced:['✓ Synced','#1D6A2C'],offline:['⚠ Offline','#C0392B'],loading:['↓ Loading...','#1A4B7C']};
+  const[text,color]=map[s]||map.synced;el.textContent=text;el.style.color=color;
+}
+
+// Override save to also push to Firebase
+const _localSave = save;
+function save(){
+  _localSave();
+  setSyncStatus('syncing');
+  fbdb.ref(FB_PATH).set(JSON.parse(JSON.stringify(db)))
+    .then(()=>setSyncStatus('synced'))
+    .catch(()=>setSyncStatus('offline'));
+}
+
+function startLiveListener(){
+  if(_fbListenerOn)return;
+  _fbListenerOn=true;
+  fbdb.ref(FB_PATH).on('value',snapshot=>{
+    const remote=snapshot.val();
+    if(!remote)return;
+    if(JSON.stringify(remote)===JSON.stringify(db))return;
+    db=remote;
+    if(!db.checks)db.checks={};
+    if(!db.distPeople)db.distPeople=[...db.people];
+    if(!db.allocSettings)db.allocSettings={...DEF_ALLOC};
+    try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}
+    setSyncStatus('synced');
+    const ap=document.querySelector('.panel.active');
+    if(!ap)return;
+    const t=ap.id.replace('panel-','');
+    if(t==='overview'){renderPills();refreshOverview();}
+    if(t==='expense'){renderCatBars();renderExpenseTable();}
+    if(t==='distribution'){renderAllocSettings();renderDistribution();}
+    if(t==='summary')renderSummary();
+  });
+}
+
+// Boot: try Firebase first, fall back to localStorage
+setSyncStatus('loading');
+fbdb.ref(FB_PATH).once('value')
+  .then(snapshot=>{
+    const remote=snapshot.val();
+    if(remote){
+      db=remote;
+      if(!db.checks)db.checks={};
+      if(!db.distPeople)db.distPeople=[...db.people];
+      if(!db.allocSettings)db.allocSettings={...DEF_ALLOC};
+      const eii=new Set(db.income.map(x=>x.id));
+      SEED_DATA.income.forEach(x=>{if(!eii.has(x.id))db.income.push(x);});
+      const eei=new Set(db.expenses.map(x=>x.id));
+      SEED_DATA.expenses.forEach(x=>{if(!eei.has(x.id))db.expenses.push(x);});
+      const ebi=new Set(db.budgets.map(x=>x.id));
+      SEED_DATA.budgets.forEach(x=>{if(!ebi.has(x.id))db.budgets.push(x);});
+    } else {
+      db={...SEED_DATA,checks:{},allocSettings:{...DEF_ALLOC}};
+      fbdb.ref(FB_PATH).set(JSON.parse(JSON.stringify(db)));
+    }
+    try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}
+    setSyncStatus('synced');
+    init();setPerson(db.people[0]||'Maia');renderPills();refreshOverview();
+    startLiveListener();
+  })
+  .catch(()=>{
+    // Firebase unavailable - use localStorage
+    setSyncStatus('offline');
+    load();
+    init();setPerson(db.people[0]||'Maia');renderPills();refreshOverview();
+  });
+
+
 
 </script>
 </body>
