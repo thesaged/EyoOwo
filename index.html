@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#F7F5F0;--surface:#FFF;--surface2:#F0EDE6;--surface3:#E8E4DC;
+  --border:rgba(0,0,0,.08);--bs:rgba(0,0,0,.15);
+  --text:#1A1714;--t2:#6B6560;--t3:#9E9890;
+  --accent:#2D5016;--danger:#C0392B;--dbg:#FDF0EE;
+  --success:#1D6A2C;--sbg:#EDF7EF;
+  --blue:#1A4B7C;--bluebg:#EBF2FA;
+  --r:10px;--rl:16px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --ff:'DM Sans',system-ui,sans-serif;--fd:'DM Serif Display',Georgia,serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;gap:12px}
+.nav-brand{font-family:var(--fd);font-size:19px;white-space:nowrap}.nav-brand span{color:var(--accent)}
+.nav-tabs{display:flex;gap:3px;background:var(--surface2);border-radius:var(--r);padding:3px;flex-shrink:0}
+.nav-tab{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .15s;font-family:var(--ff)}
+.nav-tab:hover{color:var(--text);background:rgba(0,0,0,.04)}
+.nav-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.export-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--ff);transition:opacity .15s;white-space:nowrap}
+.export-btn:hover{opacity:.88}
+main{max-width:980px;margin:0 auto;padding:24px 18px 60px}
+.panel{display:none}.panel.active{display:block}
+.ph{margin-bottom:20px}
+.ph h2{font-family:var(--fd);font-size:24px;font-weight:400;letter-spacing:-.02em}
+.ph p{color:var(--t2);font-size:13px;margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;box-shadow:var(--sh)}
+.card+.card,.card+div{margin-top:12px}
+.ct{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px;margin-bottom:12px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;font-weight:500;color:var(--t2)}
+input[type=text],input[type=number],select{padding:8px 11px;border:1px solid var(--bs);border-radius:var(--r);font-size:14px;font-family:var(--ff);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,80,22,.1)}
+input::placeholder{color:var(--t3)}
+.btn{padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--bs);background:transparent;color:var(--text);font-family:var(--ff);transition:all .15s}
+.btn:hover{background:var(--surface2)}
+.btn-p{background:var(--text);color:var(--surface);border-color:var(--text)}
+.btn-p:hover{opacity:.85;background:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-d{color:var(--danger);border-color:transparent;padding:4px 8px;font-size:12px}
+.btn-d:hover{background:var(--dbg)}
+.btn-g{border-color:transparent;color:var(--t2)}
+.btn-g:hover{background:var(--surface2);color:var(--text)}
+.btn-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:8px}
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.pill{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--bs);background:transparent;color:var(--t2);font-family:var(--ff);transition:all .15s}
+.pill:hover{border-color:var(--t2);color:var(--text)}
+.pill.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+.tbl-wrap{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--t3);padding:7px 9px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.pos{color:var(--success)}.neg{color:var(--danger)}.mu{color:var(--t3)}
+.pstrip{display:grid;gap:9px;margin-bottom:16px;width:100%}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:13px 17px;box-shadow:var(--sh);display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;overflow:hidden}
+.pcard-name{font-weight:600;font-size:14px}
+.pcard-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.pcard-amt{font-family:var(--fd);font-size:21px;text-align:right;word-break:break-word}
+.pcard-note{font-size:11px;color:var(--t3);text-align:right;margin-top:2px}
+.dotted-sep{border:none;border-top:2px dashed var(--bs);margin:28px 0;opacity:.4}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:9px;margin-bottom:18px}
+.cat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:13px 15px;box-shadow:var(--sh)}
+.cat-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:6px}
+.cat-amt{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)}
+.cat-bud{font-size:11px;color:var(--t2);margin-top:2px;margin-bottom:8px}
+.bar-wrap{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1),background-color .4s}
+.cat-remain{font-size:11px;margin-top:5px;font-weight:500}
+.dist-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:18px}
+.dmetric{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:15px 17px;box-shadow:var(--sh)}
+.dmetric-lbl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.dmetric-val{font-family:var(--fd);font-size:23px}
+.dmetric-sub{font-size:11px;color:var(--t2);margin-top:4px}
+.dsec{margin-bottom:13px}
+.dsec-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 17px;background:var(--surface3);border-radius:var(--rl) var(--rl) 0 0;border:1px solid var(--border);border-bottom:none}
+.dsec-title{font-size:14px;font-weight:600}
+.dsec-tot{font-family:var(--fd);font-size:17px}
+.dsec-body{background:var(--surface);border:1px solid var(--border);border-radius:0 0 var(--rl) var(--rl);overflow:hidden}
+.drow{display:grid;grid-template-columns:26px 1fr auto auto;align-items:center;gap:10px;padding:10px 17px;border-bottom:1px solid var(--border)}
+.drow:last-child{border-bottom:none}
+.drow.done{background:var(--sbg)}
+.drow.done .damt{color:var(--success)}
+.dchk{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.dlbl{font-size:13px;font-weight:500}
+.dsub{font-size:11px;color:var(--t3);margin-top:1px}
+.damt{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.dpct{font-size:11px;color:var(--t3);text-align:right;white-space:nowrap}
+.filter-row{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.filter-row label{font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap}
+.filter-row select{width:auto;min-width:120px}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:18px}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;box-shadow:var(--sh)}
+.sum-lbl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.sum-val{font-family:var(--fd);font-size:26px;color:var(--text);line-height:1.1}
+.sum-sub{font-size:12px;color:var(--t2);margin-top:5px}
+.chart-tab.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block}
+.banner{border-radius:var(--rl);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.banner-sur{background:var(--sbg);border:1px solid #86efac}
+.banner-def{background:var(--dbg);border:1px solid #fca5a5}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--rl);padding:26px;max-width:480px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+.modal h3{font-family:var(--fd);font-size:20px;font-weight:400;margin-bottom:5px}
+.modal p{color:var(--t2);font-size:13px;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.empty{text-align:center;padding:26px 14px;color:var(--t3);font-size:13px}
+.empty strong{display:block;font-size:14px;margin-bottom:3px;color:var(--t2)}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--surface);padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;opacity:0;transition:all .25s;pointer-events:none;z-index:999}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:640px){
+  nav{flex-wrap:wrap;height:auto;padding:8px 12px 10px}
+  .nav-tabs{order:3;width:100%;overflow-x:auto}
+  .fg{grid-template-columns:1fr 1fr}
+  .fg3{grid-template-columns:1fr 1fr}
+  .dist-3{grid-template-columns:1fr}
+  .pstrip{grid-template-columns:1fr!important}
+  .pcard{flex-wrap:wrap;gap:8px}
+  .pcard-amt{font-size:18px}
+  .sum-grid{grid-template-columns:1fr 1fr}
+  .cat-grid{grid-template-columns:1fr 1fr}
+  .drow{grid-template-columns:24px 1fr auto;gap:6px;padding:10px 12px}
+  .damt{font-size:12px}
+  .dpct{display:none}
+  main{padding:16px 12px 60px}
+}
+</style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">Finance<span>Hub</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="setTab('overview')">Income &amp; Budget</button>
+    <button class="nav-tab" onclick="setTab('expense')">Expense</button>
+    <button class="nav-tab" onclick="setTab('distribution')">Distribution</button>
+    <button class="nav-tab" onclick="setTab('summary')">Summary</button>
+  </div>
+  <button class="export-btn" onclick="openModal('export-modal')">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>
+    Export
+  </button>
+  <div id="sync-status" style="font-size:11px;font-weight:600;color:#1D6A2C;padding:4px 10px;background:rgba(29,106,44,0.08);border-radius:99px;white-space:nowrap">✓ Synced</div>
+</nav>
+<main>
+
+<!-- INCOME & BUDGET -->
+<div id="panel-overview" class="panel active">
+  <div class="ph"><h2>Income &amp; Budget</h2><p>Log income and set spending targets for the month.</p></div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct">Period</div>
+    <div class="fg2">
+      <div class="field"><label>Month</label><select id="ob-month" onchange="refreshOverview()"></select></div>
+      <div class="field"><label>Year</label><select id="ob-year" onchange="refreshOverview()"></select></div>
+    </div>
+  </div>
+  <div id="carry-banner" style="display:none"></div>
+  <div class="card">
+    <div class="ct">Income</div>
+    <div id="ov-person-strip" class="pstrip" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+    <hr class="dotted-sep">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--t2)">Log new income</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Person</label>
+      <div class="pills" id="person-pills"></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Income source</label><select id="i-source"></select></div>
+      <div class="field"><label>Description (optional)</label><input type="text" id="i-desc" placeholder="e.g. April paycheck"></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Net amount ($)</label><input type="number" id="i-net" placeholder="0.00" min="0" step="0.01"></div>
+      <div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-g btn-sm" onclick="openModal('people-modal');renderPeopleModal()">+ Manage people</button>
+      <button class="btn btn-p" onclick="saveIncome()">Log income</button>
+    </div>
+    <div id="income-tbl" style="margin-top:14px;display:none">
+      <hr class="dotted-sep" style="margin:14px 0">
+      <div class="ct">Income entries</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Person</th><th>Source</th><th>Description</th><th class="num">Net ($)</th><th></th></tr></thead>
+        <tbody id="income-tbody"></tbody>
+      </table></div>
+    </div>
+    <div id="income-empty-msg" style="padding:14px 0 0;font-size:13px;color:var(--t3);display:none">No income entries for this period yet.</div>
+  </div>
+  <hr class="dotted-sep">
+  <div class="card">
+    <div class="ct">Budget</div>
+    <div class="fg">
+      <div class="field"><label>Rent ($)</label><input type="number" id="b-rent" placeholder="0" min="0"></div>
+      <div class="field"><label>Utilities ($)</label><input type="number" id="b-utilities" placeholder="0" min="0"></div>
+      <div class="field"><label>Groceries ($)</label><input type="number" id="b-groceries" placeholder="0" min="0"></div>
+      <div class="field"><label>Gifting ($)</label><input type="number" id="b-gifting" placeholder="0" min="0"></div>
+      <div class="field"><label>Travel ($)</label><input type="number" id="b-travel" placeholder="0" min="0"></div>
+      <div class="field"><label>Flex ($)</label><input type="number" id="b-flex" placeholder="0" min="0"></div>
+      <div class="field"><label>Others ($)</label><input type="number" id="b-others" placeholder="0" min="0"></div>
+      <div class="field"><label>Debt ($)</label><input type="number" id="b-debt" placeholder="0" min="0"></div>
+      <div class="field"><label>House ($)</label><input type="number" id="b-house" placeholder="0" min="0"></div>
+      <div class="field"><label>Car ($)</label><input type="number" id="b-car" placeholder="0" min="0"></div>
+    </div>
+    <div class="btn-row">
+      <span style="font-size:13px;color:var(--t2)">Total: <strong id="b-total" style="color:var(--text);font-size:15px">$0.00</strong></span>
+      <button class="btn btn-p" onclick="saveBudget()">Save budget</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div id="panel-expense" class="panel">
+  <div class="ph"><h2>Expense log</h2><p>Log transactions and track budget by category.</p></div>
+  <div id="expense-cat-section" style="display:none">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:10px">Spending vs budget</div>
+    <div id="expense-cat-grid" class="cat-grid"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Log new expense</div>
+    <div class="fg2">
+      <div class="field"><label>Month</label><select id="e-month"></select></div>
+      <div class="field"><label>Year</label><select id="e-year"></select></div>
+    </div>
+    <div class="fg3">
+      <div class="field"><label>Category</label><select id="e-cat"><option>Rent</option><option>Utilities</option><option>Groceries</option><option>Gifting</option><option>Travel</option><option>Flex</option><option>Others</option><option>Debt</option><option>House</option><option>Car</option></select></div>
+      <div class="field"><label>Paid by</label><select id="e-who"></select></div>
+      <div class="field"><label>Account</label><select id="e-account"><option>Bilt</option><option>Chase</option><option>Apple Card</option><option>Wells Fargo</option><option>Discover</option><option>Other</option></select></div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label>Description</label><input type="text" id="e-desc" placeholder="e.g. Walmart, Auto loan..."></div>
+      <div class="field"><label>Amount ($)</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01"></div>
+    </div>
+    <div class="btn-row"><div></div><button class="btn btn-p" onclick="saveExpense()">Log expense</button></div>
+  </div>
+  <div style="margin-top:12px">
+    <div class="filter-row">
+      <label>Filter:</label>
+      <select id="ef-month" onchange="renderExpenseTable()"><option value="">All months</option></select>
+      <select id="ef-year" onchange="renderExpenseTable()"><option value="">All years</option></select>
+      <select id="ef-cat" onchange="renderExpenseTable()"><option value="">All categories</option><option>Rent</option><option>Utilities</option><option>Groceries</option><option>Gifting</option><option>Travel</option><option>Flex</option><option>Others</option><option>Debt</option><option>House</option><option>Car</option></select>
+    </div>
+    <div id="expense-tbl-wrap" style="display:none"><div class="card"><div class="ct">Entries</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Month</th><th>Year</th><th>Category</th><th>Description</th><th>Paid by</th><th>Account</th><th class="num">Amount ($)</th><th></th></tr></thead>
+        <tbody id="expense-tbody"></tbody>
+      </table></div></div>
+    </div>
+    <div id="expense-empty" class="card"><div class="empty"><strong>No expenses logged yet</strong>Use the form above.</div></div>
+  </div>
+</div>
+
+<!-- DISTRIBUTION -->
+<div id="panel-distribution" class="panel">
+  <div class="ph"><h2>Distribution</h2><p>How the leftover is split. Check each off as done.</p></div>
+  <div class="filter-row">
+    <label>Period:</label>
+    <select id="df-month" onchange="renderDistribution()"><option value="">All months</option></select>
+    <select id="df-year" onchange="renderDistribution()"><option value="">All years</option></select>
+    <button class="btn btn-sm" onclick="openModal('dist-people-modal');renderDistPeopleModal()">Manage dist. people</button>
+  </div>
+  <div id="dist-settings"></div>
+  <div id="dist-content"></div>
+</div>
+
+<!-- SUMMARY -->
+<div id="panel-summary" class="panel">
+  <div class="ph"><h2>Summary</h2><p>Key figures and charts for the selected period.</p></div>
+  <div class="filter-row" style="flex-wrap:wrap;gap:10px;margin-bottom:16px">
+    <label>Period:</label>
+    <select id="sf-view" onchange="onSummaryFilterChange()" style="min-width:110px">
+      <option value="all">All time</option>
+      <option value="month">Month</option>
+      <option value="quarter">Quarter</option>
+      <option value="year">Year</option>
+    </select>
+    <select id="sf-month" onchange="renderSummary()" style="display:none;min-width:120px"><option value="">All months</option></select>
+    <select id="sf-quarter" onchange="renderSummary()" style="display:none;min-width:120px">
+      <option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option>
+      <option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option>
+    </select>
+    <select id="sf-year" onchange="renderSummary()" style="display:none;min-width:90px"><option value="">All years</option></select>
+  </div>
+  <div id="summary-cards"></div>
+  <div id="charts-section" style="margin-top:18px;display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div class="ct" style="margin-bottom:0">Income · Expenses · Savings</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm chart-tab active" id="ctab-pie" onclick="switchChart('pie')">Pie</button>
+          <button class="btn btn-sm chart-tab" id="ctab-bar" onclick="switchChart('bar')">Bar</button>
+          <button class="btn btn-sm chart-tab" id="ctab-line" onclick="switchChart('line')">Line</button>
+        </div>
+      </div>
+      <div id="chart-controls" style="margin-bottom:12px"></div>
+      <div id="pie-wrap" style="position:relative;width:100%;max-width:380px;margin:0 auto;height:280px"><canvas id="pieChart"></canvas></div>
+      <div id="bar-wrap" style="display:none;position:relative;width:100%;height:320px"><canvas id="barChart"></canvas></div>
+      <div id="line-wrap" style="display:none;position:relative;width:100%;height:320px"><canvas id="lineChart"></canvas></div>
+      <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12px;color:var(--t2)"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- EXPORT MODAL -->
+<div id="export-modal" class="modal-bg" onclick="bgClose(event,'export-modal')">
+  <div class="modal">
+    <h3>Export to Excel</h3>
+    <p>Choose a period — leave blank to export all data.</p>
+    <div class="fg2">
+      <div class="field"><label>Month</label><select id="ex-month"><option value="">All months</option></select></div>
+      <div class="field"><label>Year</label><select id="ex-year"><option value="">All years</option></select></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal('export-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="exportExcel()">Download .xlsx</button>
+    </div>
+  </div>
+</div>
+
+<!-- PEOPLE MODAL -->
+<div id="people-modal" class="modal-bg" onclick="bgClose(event,'people-modal')">
+  <div class="modal">
+    <h3>Manage people</h3>
+    <p>Add or remove household members. Income entries are preserved.</p>
+    <div id="people-list" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px"><input type="text" id="new-person" placeholder="Name" style="flex:1"><button class="btn btn-p" onclick="addPerson()">Add</button></div>
+    <div class="modal-btns"><button class="btn" onclick="closeModal('people-modal')">Done</button></div>
+  </div>
+</div>
+
+<!-- DIST PEOPLE MODAL -->
+<div id="dist-people-modal" class="modal-bg" onclick="bgClose(event,'dist-people-modal')">
+  <div class="modal">
+    <h3>Distribution people</h3>
+    <p>Choose who receives a distribution.</p>
+    <div id="dist-people-list" style="margin-bottom:8px"></div>
+    <div class="modal-btns"><button class="btn btn-p" onclick="closeModal('dist-people-modal');renderDistribution()">Done</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CATS=['Rent','Utilities','Groceries','Gifting','Travel','Flex','Others','Debt','House','Car'];
+const SOURCES=['Bonus','Chartis','Freelance','Gift','MN DHS','OHA','Others','Refund','Carry Over'];
+const SK='financehub_v13';
+const DEF_ALLOC={roth:625,stocks:400,bt:200,givingPct:10,famEM:24.78,famInv:24.78,pEM:12.39,pRE:6.48,pChk:6.34};
+
+let db={budgets:[],income:[],expenses:[],people:['Maia','Sage'],distPeople:['Maia','Sage'],checks:{}};
+let curPerson='Maia';
+
+const SEED_DATA={"budgets":[{"month":"September","year":"2025","id":"September2025","Rent":0,"Utilities":200,"Groceries":500,"Gifting":300,"Travel":500,"Flex":0,"Others":200,"Debt":3000,"House":1500,"Car":1500,"total":7700},{"month":"October","year":"2025","id":"October2025","Rent":2500,"Utilities":200,"Groceries":300,"Gifting":300,"Travel":500,"Flex":0,"Others":200,"Debt":0,"House":1500,"Car":1500,"total":7000},{"month":"November","year":"2025","id":"November2025","Rent":2500,"Utilities":200,"Groceries":300,"Gifting":300,"Travel":500,"Flex":0,"Others":200,"Debt":0,"House":500,"Car":5000,"total":9500},{"month":"December","year":"2025","id":"December2025","Rent":2500,"Utilities":200,"Groceries":300,"Gifting":500,"Travel":300,"Flex":0,"Others":400,"Debt":5000,"House":500,"Car":1000,"total":10700},{"month":"January","year":"2026","id":"January2026","Rent":2500,"Utilities":285.64,"Groceries":300,"Gifting":300,"Travel":0,"Flex":0,"Others":250,"Debt":1813.7,"House":900,"Car":1575.63,"total":7924.97},{"month":"February","year":"2026","id":"February2026","Rent":2500,"Utilities":341.91,"Groceries":350,"Gifting":300,"Travel":100,"Flex":200,"Others":100,"Debt":1261.74,"House":200,"Car":1000,"total":6353.65},{"month":"March","year":"2026","id":"March2026","Rent":2500,"Utilities":320,"Groceries":400,"Gifting":300,"Travel":795.86,"Flex":900,"Others":250,"Debt":0,"House":500,"Car":1000,"total":6965.86},{"month":"April","year":"2026","id":"April2026","Rent":2500,"Utilities":300,"Groceries":400,"Gifting":300,"Travel":300,"Flex":200,"Others":200,"Debt":500,"House":500,"Car":1000,"total":6200}],"income":[{"id":1001,"month":"September","year":"2025","person":"Maia","source":"Chartis","desc":"Sep pay","net":3011.03},{"id":1002,"month":"September","year":"2025","person":"Maia","source":"Chartis","desc":"Sep pay 2","net":3011.02},{"id":1003,"month":"October","year":"2025","person":"Maia","source":"Chartis","desc":"Oct pay","net":2966.13},{"id":1004,"month":"October","year":"2025","person":"Maia","source":"Chartis","desc":"Oct pay 2","net":2966.13},{"id":1005,"month":"November","year":"2025","person":"Maia","source":"Chartis","desc":"Nov pay","net":2966.13},{"id":1006,"month":"November","year":"2025","person":"Maia","source":"Chartis","desc":"Nov pay 2","net":3411.01},{"id":1007,"month":"December","year":"2025","person":"Maia","source":"Chartis","desc":"Dec pay","net":3719.01},{"id":1008,"month":"December","year":"2025","person":"Maia","source":"Chartis","desc":"Dec pay 2","net":3411.01},{"id":1009,"month":"September","year":"2025","person":"Sage","source":"OHA","desc":"Sep OHA","net":4778.94},{"id":1010,"month":"October","year":"2025","person":"Sage","source":"OHA","desc":"Oct OHA","net":4850.32},{"id":1011,"month":"November","year":"2025","person":"Sage","source":"OHA","desc":"Nov OHA","net":4850.32},{"id":1012,"month":"December","year":"2025","person":"Sage","source":"OHA","desc":"Dec OHA","net":4568.33},{"id":1014,"month":"December","year":"2025","person":"Sage","source":"MN DHS","desc":"Dec MN","net":1093.65},{"id":1015,"month":"December","year":"2025","person":"Sage","source":"MN DHS","desc":"Dec MN 2","net":2069.62},{"id":1017,"month":"October","year":"2025","person":"Sage","source":"Others","desc":"Oct other","net":5067.39},{"id":1018,"month":"December","year":"2025","person":"Sage","source":"Others","desc":"Dec other","net":1568.0},{"id":1019,"month":"January","year":"2026","person":"Maia","source":"Chartis","desc":"Jan pay 1","net":3374.33},{"id":1020,"month":"January","year":"2026","person":"Maia","source":"Chartis","desc":"Jan pay 2","net":10303.32},{"id":1021,"month":"January","year":"2026","person":"Sage","source":"OHA","desc":"Jan OHA","net":4539.17},{"id":1022,"month":"January","year":"2026","person":"Sage","source":"MN DHS","desc":"Jan MN 1","net":2037.83},{"id":1023,"month":"January","year":"2026","person":"Sage","source":"MN DHS","desc":"Jan MN 2","net":2037.85},{"id":1024,"month":"February","year":"2026","person":"Maia","source":"Chartis","desc":"Feb pay 1","net":3394.16},{"id":1025,"month":"February","year":"2026","person":"Maia","source":"Chartis","desc":"Feb pay 2","net":6585.18},{"id":1026,"month":"February","year":"2026","person":"Sage","source":"OHA","desc":"Feb OHA","net":4543.18},{"id":1027,"month":"February","year":"2026","person":"Sage","source":"MN DHS","desc":"Feb MN 1","net":2013.11},{"id":1028,"month":"February","year":"2026","person":"Sage","source":"MN DHS","desc":"Feb MN 2","net":2012.72},{"id":1029,"month":"February","year":"2026","person":"Others","source":"Others","desc":"Feb other","net":118.38},{"id":1030,"month":"March","year":"2026","person":"Maia","source":"Chartis","desc":"Mar pay 1","net":3394.17},{"id":1031,"month":"March","year":"2026","person":"Maia","source":"Chartis","desc":"Mar pay 2","net":3394.14},{"id":1032,"month":"March","year":"2026","person":"Sage","source":"OHA","desc":"Mar OHA","net":4224.01},{"id":1033,"month":"March","year":"2026","person":"Sage","source":"MN DHS","desc":"Mar MN 1","net":2012.72},{"id":1034,"month":"March","year":"2026","person":"Sage","source":"MN DHS","desc":"Mar MN 2","net":2012.89},{"id":1035,"month":"March","year":"2026","person":"Others","source":"Others","desc":"Mar other","net":397.6},{"id":1037,"month":"April","year":"2026","person":"Sage","source":"MN DHS","desc":"Apr MN 1","net":2014.01},{"id":1038,"month":"April","year":"2026","person":"Sage","source":"MN DHS","desc":"Apr MN 2","net":2013.68}],"expenses":[{"id":5001,"month":"September","year":"2025","category":"Groceries","desc":"Walmart","who":"Sage","account":"Bilt","amount":262.22},{"id":5002,"month":"September","year":"2025","category":"House","desc":"TV Console","who":"Maia","account":"Apple Card","amount":528.66},{"id":5003,"month":"September","year":"2025","category":"Utilities","desc":"Electricity","who":"Sage","account":"Wells Fargo","amount":100.39},{"id":5004,"month":"September","year":"2025","category":"House","desc":"Bar stool","who":"Maia","account":"Apple Card","amount":69.68},{"id":5005,"month":"September","year":"2025","category":"Others","desc":"Bilt","who":"Sage","account":"Wells Fargo","amount":1400.0},{"id":5006,"month":"September","year":"2025","category":"House","desc":"Paper holder","who":"Maia","account":"Apple Card","amount":28.25},{"id":5007,"month":"September","year":"2025","category":"House","desc":"Trash bags etc","who":"Maia","account":"Bilt","amount":71.27},{"id":5008,"month":"September","year":"2025","category":"House","desc":"Glassware containers","who":"Maia","account":"Bilt","amount":69.66},{"id":5009,"month":"September","year":"2025","category":"House","desc":"Shoe cabinet","who":"Maia","account":"Apple Card","amount":131.14},{"id":5010,"month":"September","year":"2025","category":"Groceries","desc":"Goat meat","who":"Maia","account":"Bilt","amount":240.0},{"id":5011,"month":"September","year":"2025","category":"Debt","desc":"","who":"Maia","account":"Chase","amount":1500.0},{"id":5012,"month":"September","year":"2025","category":"Gifting","desc":"","who":"Maia","account":"Other","amount":30.0},{"id":5013,"month":"September","year":"2025","category":"Utilities","desc":"Espen WiFi","who":"Maia","account":"Chase","amount":65.0},{"id":5014,"month":"September","year":"2025","category":"Debt","desc":"Wedding","who":"Sage","account":"Wells Fargo","amount":3000.0},{"id":5015,"month":"September","year":"2025","category":"Debt","desc":"","who":"Shared","account":"Other","amount":570.48},{"id":5016,"month":"September","year":"2025","category":"Groceries","desc":"Peppers","who":"Shared","account":"Wells Fargo","amount":60.0},{"id":5017,"month":"September","year":"2025","category":"Groceries","desc":"Palm oil","who":"Shared","account":"Bilt","amount":43.97},{"id":5018,"month":"September","year":"2025","category":"House","desc":"Freezer baskets","who":"Shared","account":"Bilt","amount":30.86},{"id":5019,"month":"September","year":"2025","category":"Travel","desc":"Moyo","who":"Shared","account":"Other","amount":299.18},{"id":5020,"month":"September","year":"2025","category":"Travel","desc":"Moyo","who":"Shared","account":"Other","amount":35.0},{"id":5021,"month":"September","year":"2025","category":"House","desc":"","who":"Shared","account":"Other","amount":136.04},{"id":5022,"month":"October","year":"2025","category":"Rent","desc":"","who":"Shared","account":"Other","amount":2500.0},{"id":5023,"month":"October","year":"2025","category":"Utilities","desc":"Electricity","who":"Shared","account":"Other","amount":145.29},{"id":5024,"month":"October","year":"2025","category":"Debt","desc":"Bilt","who":"Shared","account":"Other","amount":2259.42},{"id":5025,"month":"October","year":"2025","category":"Debt","desc":"Apple-Y","who":"Shared","account":"Other","amount":2690.7},{"id":5026,"month":"October","year":"2025","category":"Debt","desc":"Apple-D","who":"Shared","account":"Other","amount":1309.44},{"id":5027,"month":"October","year":"2025","category":"Debt","desc":"Discover","who":"Shared","account":"Discover","amount":533.88},{"id":5028,"month":"October","year":"2025","category":"Travel","desc":"Mummy flight","who":"Shared","account":"Other","amount":181.46},{"id":5029,"month":"October","year":"2025","category":"Groceries","desc":"Walmart","who":"Shared","account":"Other","amount":124.46},{"id":5030,"month":"October","year":"2025","category":"House","desc":"Dresser","who":"Shared","account":"Other","amount":158.17},{"id":5031,"month":"October","year":"2025","category":"House","desc":"Nightstands","who":"Shared","account":"Other","amount":370.15},{"id":5032,"month":"October","year":"2025","category":"House","desc":"Dispensers","who":"Shared","account":"Other","amount":15.11},{"id":5033,"month":"October","year":"2025","category":"House","desc":"Bowl, apron, cards etc","who":"Shared","account":"Other","amount":105.68},{"id":5034,"month":"October","year":"2025","category":"House","desc":"Runner","who":"Shared","account":"Other","amount":61.05},{"id":5035,"month":"October","year":"2025","category":"House","desc":"Cleaning supplies","who":"Shared","account":"Other","amount":42.48},{"id":5036,"month":"October","year":"2025","category":"Gifting","desc":"A/A","who":"Shared","account":"Other","amount":100.0},{"id":5037,"month":"October","year":"2025","category":"Car","desc":"Savings","who":"Shared","account":"Other","amount":1500.0},{"id":5038,"month":"October","year":"2025","category":"Groceries","desc":"","who":"Shared","account":"Other","amount":36.77},{"id":5039,"month":"October","year":"2025","category":"Groceries","desc":"","who":"Shared","account":"Other","amount":100.95},{"id":5040,"month":"October","year":"2025","category":"Groceries","desc":"Peppers","who":"Shared","account":"Other","amount":51.89},{"id":5041,"month":"October","year":"2025","category":"Groceries","desc":"Yams, malt, rice etc","who":"Shared","account":"Other","amount":228.62},{"id":5042,"month":"October","year":"2025","category":"Gifting","desc":"Dami","who":"Shared","account":"Other","amount":150.0},{"id":5043,"month":"October","year":"2025","category":"Gifting","desc":"Ike","who":"Shared","account":"Other","amount":100.0},{"id":5044,"month":"October","year":"2025","category":"Others","desc":"Mide","who":"Shared","account":"Other","amount":300.0},{"id":5045,"month":"October","year":"2025","category":"House","desc":"AliExpress","who":"Shared","account":"Other","amount":49.09},{"id":5046,"month":"October","year":"2025","category":"House","desc":"Bookcase","who":"Shared","account":"Other","amount":170.33},{"id":5047,"month":"October","year":"2025","category":"House","desc":"HomeGoods","who":"Shared","account":"Other","amount":437.59},{"id":5048,"month":"October","year":"2025","category":"Travel","desc":"","who":"Shared","account":"Other","amount":11.77},{"id":5049,"month":"October","year":"2025","category":"Travel","desc":"","who":"Shared","account":"Other","amount":15.99},{"id":5050,"month":"October","year":"2025","category":"Travel","desc":"","who":"Shared","account":"Other","amount":22.64},{"id":5051,"month":"October","year":"2025","category":"Groceries","desc":"","who":"Shared","account":"Other","amount":89.49},{"id":5052,"month":"October","year":"2025","category":"Travel","desc":"","who":"Shared","account":"Other","amount":62.04},{"id":5053,"month":"October","year":"2025","category":"House","desc":"Goodwill","who":"Shared","account":"Other","amount":23.0},{"id":5054,"month":"October","year":"2025","category":"House","desc":"","who":"Shared","account":"Other","amount":40.02},{"id":5055,"month":"October","year":"2025","category":"Gifting","desc":"Dami","who":"Shared","account":"Other","amount":14.64},{"id":5056,"month":"October","year":"2025","category":"Others","desc":"Mide","who":"Shared","account":"Other","amount":300.0},{"id":5057,"month":"November","year":"2025","category":"Travel","desc":"Rideshare","who":"Shared","account":"Bilt","amount":85.0},{"id":5058,"month":"November","year":"2025","category":"Others","desc":"DoorDash","who":"Shared","account":"Bilt","amount":33.0},{"id":5059,"month":"November","year":"2025","category":"Groceries","desc":"Sun Foods","who":"Sage","account":"Apple Card","amount":145.06},{"id":5060,"month":"November","year":"2025","category":"Others","desc":"McDonald's","who":"Shared","account":"Apple Card","amount":27.4},{"id":5061,"month":"November","year":"2025","category":"Groceries","desc":"Walmart","who":"Shared","account":"Apple Card","amount":182.72},{"id":5062,"month":"November","year":"2025","category":"Groceries","desc":"Walmart","who":"Shared","account":"Apple Card","amount":11.46},{"id":5063,"month":"November","year":"2025","category":"House","desc":"Amazon","who":"Shared","account":"Apple Card","amount":47.17},{"id":5064,"month":"November","year":"2025","category":"Travel","desc":"Rental","who":"Shared","account":"Apple Card","amount":279.77},{"id":5065,"month":"November","year":"2025","category":"Gifting","desc":"Mum/Home","who":"Shared","account":"Apple Card","amount":205.69},{"id":5066,"month":"November","year":"2025","category":"Gifting","desc":"Mum/Home","who":"Shared","account":"Bilt","amount":40.6},{"id":5067,"month":"November","year":"2025","category":"Rent","desc":"Rent","who":"Shared","account":"Chase","amount":2500.0},{"id":5068,"month":"November","year":"2025","category":"Utilities","desc":"Utilities","who":"Shared","account":"Chase","amount":40.05},{"id":5069,"month":"November","year":"2025","category":"Utilities","desc":"Electricity","who":"Shared","account":"Wells Fargo","amount":121.43},{"id":5070,"month":"November","year":"2025","category":"Gifting","desc":"Luggage","who":"Shared","account":"Bilt","amount":100.0},{"id":5071,"month":"November","year":"2025","category":"House","desc":"Lamp","who":"Shared","account":"Discover","amount":188.84},{"id":5072,"month":"November","year":"2025","category":"Debt","desc":"Apple","who":"Shared","account":"Wells Fargo","amount":952.02},{"id":5073,"month":"November","year":"2025","category":"Debt","desc":"Discover","who":"Shared","account":"Wells Fargo","amount":500.0},{"id":5074,"month":"November","year":"2025","category":"Debt","desc":"Bilt (Mide's)","who":"Shared","account":"Wells Fargo","amount":300.0},{"id":5075,"month":"November","year":"2025","category":"Car","desc":"Insurance/savings","who":"Shared","account":"Wells Fargo","amount":5000.0},{"id":5076,"month":"November","year":"2025","category":"Gifting","desc":"Ibro","who":"Shared","account":"Apple Card","amount":29.98},{"id":5077,"month":"November","year":"2025","category":"Travel","desc":"Lyft to Ibrahim's","who":"Shared","account":"Bilt","amount":59.1},{"id":5078,"month":"November","year":"2025","category":"Travel","desc":"Lyft to Budget","who":"Shared","account":"Bilt","amount":10.81},{"id":5079,"month":"November","year":"2025","category":"Travel","desc":"Rental","who":"Shared","account":"Apple Card","amount":294.04},{"id":5080,"month":"November","year":"2025","category":"Groceries","desc":"Moi moi pouch","who":"Maia","account":"Bilt","amount":31.56},{"id":5081,"month":"November","year":"2025","category":"Others","desc":"Black tax","who":"Shared","account":"Other","amount":45.49},{"id":5082,"month":"November","year":"2025","category":"Car","desc":"Insurance","who":"Shared","account":"Apple Card","amount":549.5},{"id":5083,"month":"November","year":"2025","category":"Gifting","desc":"Burlington Gift","who":"Maia","account":"Bilt","amount":41.98},{"id":5084,"month":"November","year":"2025","category":"Groceries","desc":"Trader Joe's","who":"Maia","account":"Bilt","amount":16.23},{"id":5085,"month":"November","year":"2025","category":"Gifting","desc":"Target Gift","who":"Maia","account":"Bilt","amount":59.26},{"id":5086,"month":"December","year":"2025","category":"Groceries","desc":"Trader Joes, Walmart, Target","who":"Shared","account":"Bilt","amount":366.07},{"id":5087,"month":"December","year":"2025","category":"House","desc":"Amazon","who":"Shared","account":"Bilt","amount":100.79},{"id":5088,"month":"December","year":"2025","category":"Car","desc":"Walmart","who":"Shared","account":"Bilt","amount":40.0},{"id":5089,"month":"December","year":"2025","category":"Car","desc":"Loan","who":"Shared","account":"Wells Fargo","amount":387.84},{"id":5090,"month":"December","year":"2025","category":"Debt","desc":"Fisayo","who":"Shared","account":"Wells Fargo","amount":2000.0},{"id":5091,"month":"December","year":"2025","category":"Debt","desc":"Apple","who":"Maia","account":"Chase","amount":685.79},{"id":5092,"month":"December","year":"2025","category":"Debt","desc":"Apple","who":"Sage","account":"Wells Fargo","amount":1206.48},{"id":5093,"month":"December","year":"2025","category":"Debt","desc":"Refund for shipping","who":"Sage","account":"Wells Fargo","amount":600.0},{"id":5094,"month":"December","year":"2025","category":"Utilities","desc":"Electricity","who":"Shared","account":"Wells Fargo","amount":173.05},{"id":5095,"month":"December","year":"2025","category":"Others","desc":"Phone bill","who":"Shared","account":"Wells Fargo","amount":261.79},{"id":5096,"month":"December","year":"2025","category":"Debt","desc":"Discover","who":"Shared","account":"Wells Fargo","amount":323.72},{"id":5097,"month":"December","year":"2025","category":"Debt","desc":"Bilt","who":"Sage","account":"Wells Fargo","amount":1995.16},{"id":5098,"month":"December","year":"2025","category":"Debt","desc":"Apple","who":"Maia","account":"Chase","amount":75.98},{"id":5099,"month":"December","year":"2025","category":"Debt","desc":"Apple","who":"Sage","account":"Wells Fargo","amount":1000.0},{"id":5100,"month":"December","year":"2025","category":"Rent","desc":"","who":"Shared","account":"Other","amount":2500.0},{"id":5101,"month":"December","year":"2025","category":"Utilities","desc":"","who":"Shared","account":"Other","amount":40.11},{"id":5102,"month":"December","year":"2025","category":"Car","desc":"","who":"Shared","account":"Other","amount":387.84},{"id":5103,"month":"December","year":"2025","category":"House","desc":"","who":"Shared","account":"Other","amount":500.0},{"id":5104,"month":"December","year":"2025","category":"Gifting","desc":"","who":"Shared","account":"Other","amount":473.27},{"id":5105,"month":"December","year":"2025","category":"Others","desc":"","who":"Shared","account":"Other","amount":213.71},{"id":5106,"month":"December","year":"2025","category":"Others","desc":"Black tax","who":"Shared","account":"Other","amount":342.5},{"id":5107,"month":"December","year":"2025","category":"Gifting","desc":"Situ's parents","who":"Sage","account":"Other","amount":26.73},{"id":5108,"month":"December","year":"2025","category":"Others","desc":"Juicer","who":"Shared","account":"Other","amount":157.5},{"id":5109,"month":"December","year":"2025","category":"Car","desc":"Wipers","who":"Shared","account":"Other","amount":49.72},{"id":5110,"month":"December","year":"2025","category":"Car","desc":"Tag","who":"Shared","account":"Other","amount":32.1},{"id":5111,"month":"December","year":"2025","category":"Car","desc":"Snow brushes, organizer","who":"Shared","account":"Other","amount":120.38},{"id":5112,"month":"December","year":"2025","category":"Car","desc":"Dome pins","who":"Shared","account":"Other","amount":3.91},{"id":5113,"month":"December","year":"2025","category":"Others","desc":"Dinner","who":"Shared","account":"Other","amount":100.0},{"id":5114,"month":"December","year":"2025","category":"Others","desc":"Bilt","who":"Shared","account":"Other","amount":28.79},{"id":5115,"month":"December","year":"2025","category":"Others","desc":"Tree","who":"Shared","account":"Other","amount":65.31},{"id":5116,"month":"December","year":"2025","category":"Car","desc":"Foam gun","who":"Shared","account":"Other","amount":16.57},{"id":5117,"month":"December","year":"2025","category":"Car","desc":"Car wash stuff","who":"Shared","account":"Other","amount":67.99},{"id":5118,"month":"December","year":"2025","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Other","amount":25.31},{"id":5119,"month":"December","year":"2025","category":"Groceries","desc":"Sam's Club","who":"Shared","account":"Other","amount":177.01},{"id":5120,"month":"December","year":"2025","category":"Groceries","desc":"Mason Jars","who":"Shared","account":"Other","amount":16.81},{"id":5121,"month":"December","year":"2025","category":"Groceries","desc":"Cinnabon","who":"Maia","account":"Other","amount":8.66},{"id":5122,"month":"December","year":"2025","category":"Others","desc":"Prime","who":"Shared","account":"Other","amount":1.08},{"id":5123,"month":"December","year":"2025","category":"Others","desc":"Phone battery","who":"Shared","account":"Other","amount":96.9},{"id":5124,"month":"December","year":"2025","category":"Gifting","desc":"Rice cooker","who":"Sage","account":"Other","amount":18.12},{"id":5125,"month":"December","year":"2025","category":"House","desc":"Michael's","who":"Maia","account":"Bilt","amount":32.73},{"id":5126,"month":"December","year":"2025","category":"Gifting","desc":"Amazon","who":"Maia","account":"Bilt","amount":33.93},{"id":5127,"month":"December","year":"2025","category":"Gifting","desc":"Amazon","who":"Sage","account":"Other","amount":181.16},{"id":5130,"month":"December","year":"2025","category":"Car","desc":"Gas","who":"Shared","account":"Other","amount":26.4},{"id":5131,"month":"December","year":"2025","category":"Others","desc":"Red lobster","who":"Shared","account":"Other","amount":66.08},{"id":5132,"month":"December","year":"2025","category":"Groceries","desc":"Foil pan","who":"Shared","account":"Other","amount":24.26},{"id":5133,"month":"December","year":"2025","category":"Groceries","desc":"Pan","who":"Shared","account":"Other","amount":18.91},{"id":5134,"month":"December","year":"2025","category":"Groceries","desc":"Fruits","who":"Shared","account":"Other","amount":46.31},{"id":5135,"month":"December","year":"2025","category":"Car","desc":"Plate frame","who":"Shared","account":"Other","amount":10.44},{"id":5136,"month":"January","year":"2026","category":"Utilities","desc":"Electricity","who":"Shared","account":"Other","amount":238.6},{"id":5137,"month":"January","year":"2026","category":"Debt","desc":"Apple","who":"Shared","account":"Other","amount":600.0},{"id":5138,"month":"January","year":"2026","category":"Debt","desc":"Bilt","who":"Shared","account":"Other","amount":750.0},{"id":5139,"month":"January","year":"2026","category":"Debt","desc":"Apple","who":"Shared","account":"Other","amount":463.7},{"id":5140,"month":"January","year":"2026","category":"Car","desc":"Dash cam","who":"Shared","account":"Other","amount":185.58},{"id":5141,"month":"January","year":"2026","category":"Groceries","desc":"Costco","who":"Shared","account":"Other","amount":244.2},{"id":5142,"month":"January","year":"2026","category":"Groceries","desc":"Walmart","who":"Shared","account":"Other","amount":55.02},{"id":5143,"month":"January","year":"2026","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Other","amount":24.24},{"id":5144,"month":"January","year":"2026","category":"Gifting","desc":"","who":"Shared","account":"Other","amount":55.0},{"id":5145,"month":"January","year":"2026","category":"Car","desc":"Parking","who":"Shared","account":"Other","amount":35.0},{"id":5146,"month":"January","year":"2026","category":"Car","desc":"Auto loan","who":"Shared","account":"Other","amount":775.68},{"id":5147,"month":"January","year":"2026","category":"Flex","desc":"Car show","who":"Shared","account":"Other","amount":42.69},{"id":5148,"month":"January","year":"2026","category":"Rent","desc":"","who":"Shared","account":"Other","amount":2500.0},{"id":5149,"month":"January","year":"2026","category":"Utilities","desc":"","who":"Shared","account":"Other","amount":47.04},{"id":5150,"month":"January","year":"2026","category":"Car","desc":"Undercoating","who":"Shared","account":"Other","amount":541.88},{"id":5151,"month":"January","year":"2026","category":"Gifting","desc":"Fisayo","who":"Shared","account":"Other","amount":80.21},{"id":5152,"month":"January","year":"2026","category":"Groceries","desc":"Walmart","who":"Shared","account":"Other","amount":53.05},{"id":5153,"month":"January","year":"2026","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Other","amount":44.39},{"id":5154,"month":"January","year":"2026","category":"Groceries","desc":"Costco","who":"Shared","account":"Other","amount":98.65},{"id":5155,"month":"January","year":"2026","category":"Car","desc":"Gas","who":"Shared","account":"Other","amount":27.26},{"id":5156,"month":"January","year":"2026","category":"Others","desc":"Flex","who":"Shared","account":"Other","amount":15.2},{"id":5157,"month":"January","year":"2026","category":"House","desc":"Bath & Body works","who":"Shared","account":"Other","amount":16.22},{"id":5158,"month":"January","year":"2026","category":"Groceries","desc":"Peppers","who":"Shared","account":"Other","amount":60.0},{"id":5159,"month":"January","year":"2026","category":"Gifting","desc":"Julienne","who":"Shared","account":"Other","amount":39.69},{"id":5160,"month":"January","year":"2026","category":"Gifting","desc":"Doyin","who":"Shared","account":"Other","amount":104.78},{"id":5161,"month":"January","year":"2026","category":"Others","desc":"","who":"Shared","account":"Other","amount":34.83},{"id":5162,"month":"February","year":"2026","category":"Debt","desc":"Bilt","who":"Shared","account":"Other","amount":1261.74},{"id":5163,"month":"February","year":"2026","category":"Groceries","desc":"Walmart","who":"Shared","account":"Chase","amount":14.1},{"id":5164,"month":"February","year":"2026","category":"House","desc":"Walmart","who":"Shared","account":"Chase","amount":200.0},{"id":5165,"month":"February","year":"2026","category":"Utilities","desc":"Electricity","who":"Shared","account":"Other","amount":285.95},{"id":5166,"month":"February","year":"2026","category":"Utilities","desc":"Utilities","who":"Shared","account":"Other","amount":55.96},{"id":5167,"month":"February","year":"2026","category":"Rent","desc":"Rent","who":"Shared","account":"Other","amount":2500.0},{"id":5168,"month":"February","year":"2026","category":"Car","desc":"Payment","who":"Shared","account":"Other","amount":775.68},{"id":5169,"month":"February","year":"2026","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Chase","amount":36.9},{"id":5170,"month":"February","year":"2026","category":"Groceries","desc":"Sun Foods","who":"Shared","account":"Bilt","amount":195.59},{"id":5171,"month":"February","year":"2026","category":"Groceries","desc":"Costco","who":"Shared","account":"Chase","amount":292.84},{"id":5172,"month":"February","year":"2026","category":"Groceries","desc":"Walmart","who":"Shared","account":"Bilt","amount":53.0},{"id":5173,"month":"February","year":"2026","category":"Flex","desc":"Slippers/Floss","who":"Shared","account":"Bilt","amount":31.99},{"id":5174,"month":"February","year":"2026","category":"Flex","desc":"Painting","who":"Shared","account":"Bilt","amount":28.3},{"id":5175,"month":"February","year":"2026","category":"Flex","desc":"Gele/Fila","who":"Shared","account":"Chase","amount":60.0},{"id":5176,"month":"February","year":"2026","category":"Flex","desc":"Slippers","who":"Shared","account":"Bilt","amount":31.99},{"id":5177,"month":"February","year":"2026","category":"Flex","desc":"AirBnB food","who":"Shared","account":"Bilt","amount":78.57},{"id":5178,"month":"February","year":"2026","category":"Flex","desc":"Starbucks","who":"Shared","account":"Bilt","amount":25.17},{"id":5179,"month":"February","year":"2026","category":"Flex","desc":"Quesadillas","who":"Shared","account":"Bilt","amount":45.0},{"id":5180,"month":"February","year":"2026","category":"Flex","desc":"Movies","who":"Shared","account":"Bilt","amount":24.36},{"id":5181,"month":"February","year":"2026","category":"Others","desc":"Bike zipties","who":"Shared","account":"Bilt","amount":20.66},{"id":5182,"month":"February","year":"2026","category":"Gifting","desc":"Eliam","who":"Shared","account":"Chase","amount":73.43},{"id":5183,"month":"February","year":"2026","category":"Gifting","desc":"Dam","who":"Shared","account":"Bilt","amount":45.0},{"id":5184,"month":"February","year":"2026","category":"Car","desc":"Gas","who":"Shared","account":"Chase","amount":28.62},{"id":5185,"month":"February","year":"2026","category":"Others","desc":"Meds organizer","who":"Shared","account":"Bilt","amount":16.32},{"id":5186,"month":"February","year":"2026","category":"Gifting","desc":"Puzzle board","who":"Shared","account":"Bilt","amount":51.16},{"id":5187,"month":"February","year":"2026","category":"Others","desc":"Subscriptions","who":"Shared","account":"Bilt","amount":3.25},{"id":5188,"month":"February","year":"2026","category":"Gifting","desc":"Birthday Chicken","who":"Shared","account":"Chase","amount":36.1},{"id":5189,"month":"February","year":"2026","category":"Others","desc":"Flighty","who":"Shared","account":"Chase","amount":65.01},{"id":5190,"month":"March","year":"2026","category":"Others","desc":"Tax","who":"Shared","account":"Bilt","amount":174.9},{"id":5191,"month":"March","year":"2026","category":"Others","desc":"Pants","who":"Shared","account":"Bilt","amount":26.35},{"id":5192,"month":"March","year":"2026","category":"Travel","desc":"Dallas","who":"Shared","account":"Bilt","amount":467.06},{"id":5193,"month":"March","year":"2026","category":"Travel","desc":"NJ","who":"Shared","account":"Bilt","amount":328.8},{"id":5194,"month":"March","year":"2026","category":"Flex","desc":"AirBnB","who":"Shared","account":"Bilt","amount":780.28},{"id":5195,"month":"March","year":"2026","category":"House","desc":"HomeGoods","who":"Shared","account":"Bilt","amount":145.15},{"id":5196,"month":"March","year":"2026","category":"House","desc":"SkyGroup","who":"Shared","account":"Bilt","amount":157.46},{"id":5197,"month":"March","year":"2026","category":"Utilities","desc":"Electricity","who":"Shared","account":"Bilt","amount":260.19},{"id":5198,"month":"March","year":"2026","category":"Car","desc":"Auto loan","who":"Shared","account":"Wells Fargo","amount":775.68},{"id":5199,"month":"March","year":"2026","category":"Gifting","desc":"Ay/An","who":"Shared","account":"Chase","amount":58.0},{"id":5200,"month":"March","year":"2026","category":"House","desc":"Deodorizer","who":"Shared","account":"Bilt","amount":21.25},{"id":5201,"month":"March","year":"2026","category":"Others","desc":"Prime sub","who":"Shared","account":"Bilt","amount":8.15},{"id":5202,"month":"March","year":"2026","category":"House","desc":"Ink, detergent, veet","who":"Shared","account":"Bilt","amount":67.61},{"id":5203,"month":"March","year":"2026","category":"Groceries","desc":"Sun Foods","who":"Shared","account":"Bilt","amount":72.37},{"id":5204,"month":"March","year":"2026","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Bilt","amount":87.83},{"id":5205,"month":"March","year":"2026","category":"Groceries","desc":"Walmart","who":"Shared","account":"Bilt","amount":93.22},{"id":5206,"month":"March","year":"2026","category":"Groceries","desc":"Costco","who":"Shared","account":"Chase","amount":163.56},{"id":5207,"month":"March","year":"2026","category":"Flex","desc":"Chipotle","who":"Shared","account":"Bilt","amount":35.06},{"id":5208,"month":"March","year":"2026","category":"Flex","desc":"JPot","who":"Shared","account":"Bilt","amount":103.52},{"id":5209,"month":"March","year":"2026","category":"Rent","desc":"Espen","who":"Shared","account":"Other","amount":2500.0},{"id":5210,"month":"March","year":"2026","category":"Utilities","desc":"","who":"Shared","account":"Other","amount":63.54},{"id":5211,"month":"March","year":"2026","category":"Gifting","desc":"Dami","who":"Shared","account":"Other","amount":40.0},{"id":5212,"month":"March","year":"2026","category":"Gifting","desc":"Sarb","who":"Shared","account":"Other","amount":98.45},{"id":5213,"month":"March","year":"2026","category":"Car","desc":"Parking","who":"Shared","account":"Other","amount":70.0},{"id":5214,"month":"March","year":"2026","category":"Gifting","desc":"Ore","who":"Shared","account":"Chase","amount":71.0},{"id":5215,"month":"March","year":"2026","category":"House","desc":"Goodwill","who":"Shared","account":"Bilt","amount":71.36},{"id":5216,"month":"March","year":"2026","category":"House","desc":"Target","who":"Shared","account":"Bilt","amount":61.37},{"id":5217,"month":"March","year":"2026","category":"Groceries","desc":"Trader Joe's","who":"Shared","account":"Bilt","amount":70.54},{"id":5218,"month":"March","year":"2026","category":"Groceries","desc":"Amazon - Avocado Oil","who":"Shared","account":"Bilt","amount":34.17},{"id":5219,"month":"March","year":"2026","category":"Gifting","desc":"Eos, Stick on hooks, jeans","who":"Shared","account":"Bilt","amount":59.81},{"id":5220,"month":"March","year":"2026","category":"Gifting","desc":"Sam's","who":"Shared","account":"Bilt","amount":52.21}],"people":["Maia","Sage","Others"],"distPeople":["Maia","Sage"],"checks":{}};
+
+function load(){
+  try{
+    const r=localStorage.getItem(SK);
+    if(r){
+      const p=JSON.parse(r);
+      db={...db,...p};
+      if(!db.checks)db.checks={};
+      if(!db.distPeople)db.distPeople=[...db.people];
+      if(!db.allocSettings)db.allocSettings={...DEF_ALLOC};
+      const eii=new Set(db.income.map(x=>x.id));
+      SEED_DATA.income.forEach(x=>{if(!eii.has(x.id))db.income.push(x);});
+      const eei=new Set(db.expenses.map(x=>x.id));
+      SEED_DATA.expenses.forEach(x=>{if(!eei.has(x.id))db.expenses.push(x);});
+      const ebi=new Set(db.budgets.map(x=>x.id));
+      SEED_DATA.budgets.forEach(x=>{if(!ebi.has(x.id))db.budgets.push(x);});
+    } else {
+      db={...SEED_DATA,checks:{},allocSettings:{...DEF_ALLOC}};
+    }
+    localStorage.setItem(SK,JSON.stringify(db));
+  }catch(e){db={...SEED_DATA,checks:{},allocSettings:{...DEF_ALLOC}};}
+}
+function save(){try{localStorage.setItem(SK,JSON.stringify(db));}catch(e){}}
+function fmt(n){return'$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function pct(n,d=1){return Number(n||0).toFixed(d)+'%';}
+function showToast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.style.background=err?'var(--danger)':'var(--text)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function bgClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+function buildYears(id,sel){
+  const el=document.getElementById(id);if(!el)return;
+  const cv=sel||new Date().getFullYear();el.innerHTML='';
+  for(let y=2000;y<=3000;y++){const o=document.createElement('option');o.value=o.textContent=y;if(y==cv)o.selected=true;el.appendChild(o);}
+}
+function buildMonths(id){
+  const el=document.getElementById(id);if(!el)return;
+  MONTHS.forEach(m=>{const o=document.createElement('option');o.value=o.textContent=m;el.appendChild(o);});
+}
+function addYearsFilter(id){
+  const el=document.getElementById(id);if(!el)return;
+  const have=new Set([...el.options].map(o=>String(o.value)));
+  for(let y=2000;y<=3000;y++){if(!have.has(String(y))){const o=document.createElement('option');o.value=o.textContent=y;el.appendChild(o);}}
+}
+
+function setTab(t){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  document.querySelector(`.nav-tab[onclick="setTab('${t}')"]`).classList.add('active');
+  if(t==='overview')refreshOverview();
+  if(t==='expense'){renderCatBars();renderExpenseTable();}
+  if(t==='distribution'){renderAllocSettings();renderDistribution();}
+  if(t==='summary')renderSummary();
+}
+
+/* PERIOD */
+function getOBPeriod(){return{month:document.getElementById('ob-month').value,year:document.getElementById('ob-year').value};}
+function refreshOverview(){
+  const{month,year}=getOBPeriod();
+  const bud=db.budgets.find(b=>b.month===month&&String(b.year)===String(year));
+  CATS.forEach(c=>{const el=document.getElementById('b-'+c.toLowerCase());if(el)el.value=bud?(bud[c]||''):'';});
+  calcBTotal();renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();
+}
+
+/* PERSON STRIP */
+function renderOvPersonStrip(){
+  const{month,year}=getOBPeriod();
+  const rows=db.income.filter(r=>r.month===month&&String(r.year)===String(year));
+  const strip=document.getElementById('ov-person-strip');
+  const totalAll=rows.reduce((s,r)=>s+r.net,0);
+  const cols=Math.min(db.people.length+1,4);
+  strip.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  strip.innerHTML=db.people.map(p=>{
+    const pr=rows.filter(r=>r.person===p),tot=pr.reduce((s,r)=>s+r.net,0),cnt=pr.length;
+    const sh=totalAll>0?((tot/totalAll)*100).toFixed(0):0;
+    return`<div class="pcard"><div><div class="pcard-name">${p}</div><div class="pcard-sub">${cnt} entr${cnt===1?'y':'ies'} · ${sh}% of total</div></div><div><div class="pcard-amt">${fmt(tot)}</div><div class="pcard-note">net income</div></div></div>`;
+  }).join('')+(db.people.length>1?`<div class="pcard" style="background:var(--surface2)"><div><div class="pcard-name" style="color:var(--t2)">Household</div><div class="pcard-sub">${rows.length} entries</div></div><div><div class="pcard-amt">${fmt(totalAll)}</div><div class="pcard-note" style="color:var(--t3)">combined</div></div></div>`:'');
+}
+
+/* CARRY BANNER */
+function renderCarryBanner(){
+  const{month,year}=getOBPeriod();
+  const bud=db.budgets.find(b=>b.month===month&&String(b.year)===String(year));
+  const totExp=db.expenses.filter(r=>r.month===month&&String(r.year)===String(year)).reduce((s,r)=>s+r.amount,0);
+  const banner=document.getElementById('carry-banner');
+  if(!bud){banner.style.display='none';return;}
+  const diff=bud.total-totExp;
+  const{nm,ny}=nextMonth(month,year);
+  banner.style.display='';
+  if(diff>0.01){
+    banner.innerHTML=`<div class="banner banner-sur"><div><div style="font-weight:600;color:var(--success)">Budget surplus: ${fmt(diff)}</div><div style="font-size:12px;color:var(--success);margin-top:2px;opacity:.8">Under budget this month. Add as carry over to ${nm} ${ny}?</div></div><button class="btn btn-sm" style="background:var(--success);color:#fff;border-color:var(--success)" onclick="addCarryOver('${month}','${year}','${nm}','${ny}',${diff})">Add Carry Over →</button></div>`;
+  } else if(diff<-0.01){
+    const over=Math.abs(diff);
+    banner.innerHTML=`<div class="banner banner-def"><div><div style="font-weight:600;color:var(--danger)">Over budget: ${fmt(over)}</div><div style="font-size:12px;color:var(--danger);margin-top:2px;opacity:.8">Add overage as Debt to ${nm} ${ny} budget?</div></div><button class="btn btn-sm" style="background:var(--danger);color:#fff;border-color:var(--danger)" onclick="addDebtRollover('${month}','${year}','${nm}','${ny}',${over})">Add to Debt →</button></div>`;
+  } else {
+    banner.style.display='none';
+  }
+}
+function nextMonth(month,year){const mi=MONTHS.indexOf(month);return{nm:mi===11?MONTHS[0]:MONTHS[mi+1],ny:mi===11?String(parseInt(year)+1):String(year)};}
+function addCarryOver(fm,fy,tm,ty,amount){
+  db.income.push({id:Date.now(),month:tm,year:ty,person:'Household',source:'Carry Over',desc:`Carry over from ${fm} ${fy}`,net:amount});
+  save();showToast(`Carry Over ${fmt(amount)} added to ${tm} ${ty}`);
+  document.getElementById('ob-month').value=tm;document.getElementById('ob-year').value=ty;refreshOverview();
+}
+function addDebtRollover(fm,fy,tm,ty,amount){
+  let bud=db.budgets.find(b=>b.month===tm&&String(b.year)===String(ty));
+  if(!bud){bud={month:tm,year:ty,id:tm+ty};CATS.forEach(c=>bud[c]=0);bud.total=0;db.budgets.push(bud);}
+  bud.Debt=(bud.Debt||0)+amount;bud.total=(bud.total||0)+amount;
+  save();showToast(`${fmt(amount)} deficit added to Debt in ${tm} ${ty}`);
+  document.getElementById('ob-month').value=tm;document.getElementById('ob-year').value=ty;refreshOverview();
+}
+
+/* INCOME TABLE (overview) */
+function renderOvIncomeTable(){
+  const{month,year}=getOBPeriod();
+  const rows=db.income.filter(r=>r.month===month&&String(r.year)===String(year)).sort((a,b)=>b.id-a.id);
+  const tw=document.getElementById('income-tbl'),em=document.getElementById('income-empty-msg'),tb=document.getElementById('income-tbody');
+  if(!rows.length){tw.style.display='none';em.style.display='';return;}
+  tw.style.display='';em.style.display='none';
+  tb.innerHTML=rows.map(r=>`<tr><td><strong>${r.person}</strong></td><td>${r.source}</td><td class="mu">${r.desc||'—'}</td><td class="num">${fmt(r.net)}</td><td><button class="btn btn-d" onclick="delIncome(${r.id})">Remove</button></td></tr>`).join('');
+}
+
+/* PEOPLE */
+function renderPills(){
+  document.getElementById('person-pills').innerHTML=db.people.map(p=>`<button class="pill ${p===curPerson?'active':''}" onclick="setPerson('${p}')">${p}</button>`).join('');
+  rebuildWho();
+}
+function rebuildWho(){const s=document.getElementById('e-who');if(!s)return;const cv=s.value;s.innerHTML=[...db.people,'Shared'].map(p=>`<option ${p===cv?'selected':''}>${p}</option>`).join('');}
+function setPerson(p){curPerson=p;renderPills();document.getElementById('i-source').innerHTML=SOURCES.map(s=>`<option>${s}</option>`).join('');}
+function renderPeopleModal(){
+  document.getElementById('people-list').innerHTML=db.people.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-weight:500">${p}</span>${db.people.length>1?`<button class="btn btn-d" onclick="removePerson('${p}')">Remove</button>`:'<span style="font-size:12px;color:var(--t3)">Only member</span>'}</div>`).join('');
+}
+function addPerson(){
+  const n=document.getElementById('new-person').value.trim();
+  if(!n){showToast('Enter a name',true);return;}
+  if(db.people.includes(n)){showToast('Already exists',true);return;}
+  db.people.push(n);document.getElementById('new-person').value='';
+  if(!db.distPeople.includes(n))db.distPeople.push(n);
+  save();renderPills();renderPeopleModal();showToast(n+' added');
+}
+function removePerson(n){
+  if(!confirm(`Remove ${n}?`))return;
+  db.people=db.people.filter(p=>p!==n);db.distPeople=db.distPeople.filter(p=>p!==n);
+  if(curPerson===n)curPerson=db.people[0];
+  save();renderPills();renderPeopleModal();
+}
+function renderDistPeopleModal(){
+  document.getElementById('dist-people-list').innerHTML=db.people.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-weight:500">${p}</span><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--t2)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent)" ${db.distPeople.includes(p)?'checked':''} onchange="toggleDistPerson('${p}',this.checked)">Include in distribution</label></div>`).join('');
+}
+function toggleDistPerson(n,c){if(c){if(!db.distPeople.includes(n))db.distPeople.push(n);}else db.distPeople=db.distPeople.filter(p=>p!==n);save();}
+
+/* BUDGET */
+function calcBTotal(){const t=CATS.reduce((s,c)=>s+(parseFloat(document.getElementById('b-'+c.toLowerCase()).value)||0),0);document.getElementById('b-total').textContent=fmt(t);}
+CATS.forEach(c=>{const el=document.getElementById('b-'+c.toLowerCase());if(el)el.addEventListener('input',calcBTotal);});
+function saveBudget(){
+  const{month,year}=getOBPeriod();
+  const row={month,year,id:month+year};let tot=0;
+  CATS.forEach(c=>{row[c]=parseFloat(document.getElementById('b-'+c.toLowerCase()).value)||0;tot+=row[c];});
+  row.total=tot;
+  const i=db.budgets.findIndex(b=>b.id===row.id);
+  if(i>=0)db.budgets[i]=row;else db.budgets.push(row);
+  save();showToast('Budget saved for '+month+' '+year);renderCarryBanner();renderCatBars();
+}
+
+/* INCOME */
+function saveIncome(){
+  const net=parseFloat(document.getElementById('i-net').value)||0;
+  if(!net){showToast('Enter an amount',true);return;}
+  const{month,year}=getOBPeriod();
+  db.income.push({id:Date.now(),month,year,person:curPerson,source:document.getElementById('i-source').value,desc:document.getElementById('i-desc').value||'',net});
+  save();document.getElementById('i-net').value='';document.getElementById('i-desc').value='';
+  showToast('Income logged for '+curPerson);renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();
+}
+function delIncome(id){if(!confirm('Remove?'))return;db.income=db.income.filter(r=>r.id!==id);save();renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();}
+
+/* EXPENSE */
+function saveExpense(){
+  const amt=parseFloat(document.getElementById('e-amt').value)||0;
+  if(!amt){showToast('Enter an amount',true);return;}
+  db.expenses.push({id:Date.now(),month:document.getElementById('e-month').value,year:document.getElementById('e-year').value,category:document.getElementById('e-cat').value,who:document.getElementById('e-who').value,account:document.getElementById('e-account').value,desc:document.getElementById('e-desc').value||'',amount:amt});
+  save();document.getElementById('e-desc').value='';document.getElementById('e-amt').value='';
+  showToast('Expense logged');renderCatBars();renderExpenseTable();renderCarryBanner();
+}
+function renderCatBars(){
+  const fm=document.getElementById('ef-month').value||getOBPeriod().month;
+  const fy=document.getElementById('ef-year').value||getOBPeriod().year;
+  let exps=db.expenses;
+  if(fm)exps=exps.filter(r=>r.month===fm);
+  if(fy)exps=exps.filter(r=>String(r.year)===String(fy));
+  const bud=db.budgets.find(b=>b.month===fm&&String(b.year)===String(fy));
+  const sec=document.getElementById('expense-cat-section'),grid=document.getElementById('expense-cat-grid');
+  const byCat={};CATS.forEach(c=>byCat[c]=0);exps.forEach(r=>{if(byCat[r.category]!==undefined)byCat[r.category]+=r.amount;});
+  const withData=CATS.filter(c=>byCat[c]>0||(bud&&bud[c]>0));
+  if(!withData.length){sec.style.display='none';return;}
+  sec.style.display='';
+  grid.innerHTML=withData.map(c=>{
+    const spent=byCat[c]||0,budAmt=bud?(bud[c]||0):0,hasBud=budAmt>0;
+    const remPct=hasBud?((Math.max(budAmt-spent,0)/budAmt)*100):100;
+    const barColor=hasBud&&spent>budAmt?'#C0392B':remPct<=20?'#C0392B':remPct<=60?'#D97706':'#1D6A2C';
+    const rawPct=hasBud?Math.min((spent/budAmt)*100,100):0;
+    const over=hasBud&&spent>budAmt;
+    return`<div class="cat-card"><div class="cat-name">${c}</div><div class="cat-amt">${fmt(spent)}</div><div class="cat-bud">${hasBud?'of '+fmt(budAmt):'No budget set'}</div><div class="bar-wrap"><div class="bar-fill" id="bar-${c}" style="width:0%;background-color:${barColor}" data-w="${rawPct}"></div></div>${hasBud?`<div class="cat-remain" style="color:${barColor}">${over?'Over by '+fmt(spent-budAmt):fmt(Math.max(budAmt-spent,0))+' left'}</div>`:''}</div>`;
+  }).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{withData.forEach(c=>{const b=document.getElementById('bar-'+c);if(b)b.style.width=b.dataset.w+'%';});}));
+}
+function renderExpenseTable(){
+  renderCatBars();
+  const fm=document.getElementById('ef-month').value,fy=document.getElementById('ef-year').value,fc=document.getElementById('ef-cat').value;
+  let rows=[...db.expenses].sort((a,b)=>b.id-a.id);
+  if(fm)rows=rows.filter(r=>r.month===fm);if(fy)rows=rows.filter(r=>String(r.year)===String(fy));if(fc)rows=rows.filter(r=>r.category===fc);
+  const w=document.getElementById('expense-tbl-wrap'),em=document.getElementById('expense-empty'),tb=document.getElementById('expense-tbody');
+  if(!rows.length){w.style.display='none';em.style.display='';return;}
+  w.style.display='';em.style.display='none';
+  tb.innerHTML=rows.map(r=>`<tr><td>${r.month}</td><td>${r.year}</td><td><span style="background:var(--surface2);color:var(--t2);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${r.category}</span></td><td>${r.desc||'—'}</td><td>${r.who}</td><td>${r.account}</td><td class="num">${fmt(r.amount)}</td><td><button class="btn btn-d" onclick="delExpense(${r.id})">Remove</button></td></tr>`).join('');
+}
+function delExpense(id){if(!confirm('Remove?'))return;db.expenses=db.expenses.filter(r=>r.id!==id);save();renderCatBars();renderExpenseTable();renderCarryBanner();}
+
+/* DISTRIBUTION CALC */
+function getAlloc(){return db.allocSettings||DEF_ALLOC;}
+function calcDistribution(leftover){
+  if(leftover<=0)return null;
+  const a=getAlloc();
+  const people=db.distPeople.filter(p=>db.people.includes(p));
+  const n=Math.max(people.length,1);
+  const givingEach=(leftover*(a.givingPct/100))/2;
+  const perFixed=a.roth+a.stocks+a.bt+givingEach;
+  const allFixed=perFixed*n;
+  const base=Math.max(leftover-allFixed,0);
+  const famEM=base*(a.famEM/100),famInv=base*(a.famInv/100);
+  const persons=people.map(p=>({person:p,blackTax:a.bt,stocks:a.stocks,roth:a.roth,giving:givingEach,em:base*(a.pEM/100),re:base*(a.pRE/100),chk:base*(a.pChk/100)}));
+  persons.forEach(p=>{p.total=p.blackTax+p.stocks+p.roth+p.giving+p.em+p.re+p.chk;});
+  const totalAlloc=famEM+famInv+persons.reduce((s,p)=>s+p.total,0);
+  return{famEM,famInv,persons,totalAlloc,remainder:leftover-totalAlloc,leftover,base,givingEach};
+}
+
+/* ALLOC SETTINGS PANEL */
+function renderAllocSettings(){
+  const a=getAlloc();
+  function af(id,val,label,unit,step){
+    return`<div class="field"><label style="font-size:11px;color:var(--t2)">${label}</label><div style="display:flex;align-items:center;gap:5px;margin-top:3px"><input type="number" id="as-${id}" value="${val}" min="0" step="${step||'1'}" style="padding:7px 9px;font-size:14px;width:100%;max-width:110px;min-width:60px;border:1px solid var(--bs);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:var(--ff);outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bs)'"><span style="font-size:12px;color:var(--t2);white-space:nowrap">${unit}</span></div></div>`;
+  }
+  const el=document.getElementById('dist-settings');if(!el)return;
+  el.innerHTML=`<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px"><div class="ct" style="margin-bottom:0">Allocation settings — Sage &amp; Maia</div><button class="btn btn-p btn-sm" onclick="saveAllocSettings()">Save &amp; recalculate</button></div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:10px">Fixed amounts (per person / month)</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px">${af('roth',a.roth,'ROTH IRA','$ / mo')}${af('stocks',a.stocks,'Stocks','$ / mo')}${af('bt',a.bt,'Black Tax','$ / mo')}${af('givingPct',a.givingPct,'Giving','% of leftover','0.01')}</div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:10px">Percentage allocations (% of base)</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:10px">${af('famEM',a.famEM,'Family EM Fund','%','0.01')}${af('famInv',a.famInv,'Family Investment','%','0.01')}${af('pEM',a.pEM,'Per-person EM','%','0.01')}${af('pRE',a.pRE,'Real Estate','%','0.01')}${af('pChk',a.pChk,'Checking','%','0.01')}</div><div style="font-size:11px;color:var(--t3)">Edit, then click "Save &amp; recalculate" to update the distribution below.</div></div>`;
+}
+function saveAllocSettings(){
+  const g=f=>parseFloat(document.getElementById('as-'+f).value)||0;
+  db.allocSettings={roth:g('roth'),stocks:g('stocks'),bt:g('bt'),givingPct:g('givingPct'),famEM:g('famEM'),famInv:g('famInv'),pEM:g('pEM'),pRE:g('pRE'),pChk:g('pChk')};
+  save();renderDistribution();showToast('Allocations saved');
+}
+
+/* CHECK HELPERS */
+function ck(p,w,d){return p+'||'+w+'||'+d;}
+function isChecked(p,w,d){return!!db.checks[ck(p,w,d)];}
+function toggleCheck(p,w,d,el){db.checks[ck(p,w,d)]=el.checked;save();const row=el.closest('.drow');if(row)row.classList.toggle('done',el.checked);}
+
+/* RENDER DISTRIBUTION */
+function renderDistribution(){
+  const fm=document.getElementById('df-month').value,fy=document.getElementById('df-year').value;
+  let inc=db.income,bud=db.budgets;
+  if(fm){inc=inc.filter(r=>r.month===fm);bud=bud.filter(b=>b.month===fm);}
+  if(fy){inc=inc.filter(r=>String(r.year)===String(fy));bud=bud.filter(b=>String(b.year)===String(fy));}
+  const totNet=inc.reduce((s,r)=>s+r.net,0);
+  const totBud=bud.reduce((s,b)=>s+b.total,0);
+  const leftover=totNet-totBud;
+  const el=document.getElementById('dist-content');
+  const period=(fm||'all')+'_'+(fy||'all');
+  const d=calcDistribution(leftover>0?leftover:0);
+  const a=getAlloc();
+  let saved=0,invested=0;
+  if(d){saved=d.famEM+d.persons.reduce((s,p)=>s+p.em+p.chk,0);invested=d.famInv+d.persons.reduce((s,p)=>s+p.roth+p.stocks+p.re,0);}
+  const metrics=`<div class="dist-3"><div class="dmetric"><div class="dmetric-lbl">Leftover</div><div class="dmetric-val ${leftover>=0?'pos':'neg'}">${fmt(leftover)}</div><div class="dmetric-sub">Income ${fmt(totNet)} − Budget ${fmt(totBud)}</div></div><div class="dmetric"><div class="dmetric-lbl">Saved</div><div class="dmetric-val pos">${d?fmt(saved):'—'}</div><div class="dmetric-sub">${totNet>0&&d?pct(saved/totNet*100)+'% of income':''}</div></div><div class="dmetric"><div class="dmetric-lbl">Invested</div><div class="dmetric-val pos">${d?fmt(invested):'—'}</div><div class="dmetric-sub">${totNet>0&&d?pct(invested/totNet*100)+'% of income':''}</div></div></div>`;
+  if(!d||leftover<=0){el.innerHTML=metrics+'<div class="card"><div class="empty"><strong>No leftover to distribute</strong>Income does not exceed budget.</div></div>';return;}
+  function drow(k,w,lbl,sub,amt){
+    const done=isChecked(period,w,k);
+    return`<div class="drow ${done?'done':''}" id="dr-${period}-${w}-${k}"><input type="checkbox" class="dchk" ${done?'checked':''} onchange="toggleCheck('${period}','${w}','${k}',this)"><div><div class="dlbl">${lbl}</div>${sub?`<div class="dsub">${sub}</div>`:''}</div><div class="dpct">${leftover>0?pct(amt/leftover*100)+'% of leftover':'—'}</div><div class="damt">${fmt(amt)}</div></div>`;
+  }
+  const famTot=d.famEM+d.famInv;
+  const famSec=`<div class="dsec"><div class="dsec-hdr"><div class="dsec-title">Family (shared)</div><div class="dsec-tot">${fmt(famTot)}</div></div><div class="dsec-body">${drow('famEM','Family','Emergency Fund',a.famEM+'% of base',d.famEM)}${drow('famInv','Family','Investment pool',a.famInv+'% of base',d.famInv)}</div></div>`;
+  const personSecs=d.persons.map(p=>`<div class="dsec"><div class="dsec-hdr"><div class="dsec-title">${p.person}</div><div class="dsec-tot">${fmt(p.total)}</div></div><div class="dsec-body">${drow('bt',p.person,'Black Tax','Fixed $'+a.bt,p.blackTax)}${drow('stocks',p.person,'Stocks','Fixed $'+a.stocks,p.stocks)}${drow('roth',p.person,'ROTH IRA','Fixed $'+a.roth,p.roth)}${drow('giving',p.person,'Giving',a.givingPct+'% of leftover ÷ 2',p.giving)}${drow('em',p.person,'Emergency Fund',a.pEM+'% of base',p.em)}${drow('re',p.person,'Real Estate',a.pRE+'% of base',p.re)}${drow('chk',p.person,'Checking Account',a.pChk+'% of base',p.chk)}</div></div>`).join('');
+  const note=`<div style="font-size:11px;color:var(--t3);padding:4px 2px 12px">Base = leftover minus fixed amounts across all distribution people.</div>`;
+  el.innerHTML=metrics+famSec+personSecs+note;
+}
+
+/* SUMMARY */
+function onSummaryFilterChange(){
+  const v=document.getElementById('sf-view').value;
+  document.getElementById('sf-month').style.display=v==='month'?'':'none';
+  document.getElementById('sf-quarter').style.display=v==='quarter'?'':'none';
+  document.getElementById('sf-year').style.display=(v==='year'||v==='quarter')?'':'none';
+  renderSummary();
+}
+function getSummaryFilter(){
+  const v=document.getElementById('sf-view').value;
+  return{view:v,month:document.getElementById('sf-month').value,quarter:parseInt(document.getElementById('sf-quarter').value),year:document.getElementById('sf-year').value};
+}
+function filterByPeriod(rows,f){
+  let r=rows;
+  const qm=[['January','February','March'],['April','May','June'],['July','August','September'],['October','November','December']];
+  if(f.view==='month'&&f.month)r=r.filter(x=>x.month===f.month);
+  if(f.view==='year'&&f.year)r=r.filter(x=>String(x.year)===String(f.year));
+  if(f.view==='quarter'){const m=qm[(f.quarter||1)-1];r=r.filter(x=>m.includes(x.month));if(f.year)r=r.filter(x=>String(x.year)===String(f.year));}
+  return r;
+}
+function buildTimeSeries(f){
+  const keys=new Set();
+  db.income.forEach(r=>keys.add(r.year+'|'+r.month));
+  db.expenses.forEach(r=>keys.add(r.year+'|'+r.month));
+  db.budgets.forEach(b=>keys.add(b.year+'|'+b.month));
+  let sorted=[...keys].sort((a,b)=>{const[ay,am]=a.split('|');const[by,bm]=b.split('|');return(ay+String(MONTHS.indexOf(am)).padStart(2,'0')).localeCompare(by+String(MONTHS.indexOf(bm)).padStart(2,'0'));});
+  // Group by year for all/year views (without specific year)
+  if((f.view==='all')||( f.view==='year'&&!f.year)){
+    const years=[...new Set(sorted.map(k=>k.split('|')[0]))];
+    return years.map(yr=>{
+      const inc=db.income.filter(r=>String(r.year)===yr).reduce((s,r)=>s+r.net,0);
+      const exp=db.expenses.filter(r=>String(r.year)===yr).reduce((s,r)=>s+r.amount,0);
+      const bud=db.budgets.filter(b=>String(b.year)===yr).reduce((s,b)=>s+b.total,0);
+      const d=calcDistribution(Math.max(inc-bud,0));
+      const sv=d?d.famEM+d.persons.reduce((s,p)=>s+p.em+p.chk,0):0;
+      const iv=d?d.famInv+d.persons.reduce((s,p)=>s+p.roth+p.stocks+p.re,0):0;
+      return{label:yr,income:inc,expenses:exp,savings:sv+iv};
+    });
+  }
+  // Filter to relevant months
+  const qm=[['January','February','March'],['April','May','June'],['July','August','September'],['October','November','December']];
+  if(f.view==='quarter'){const m=qm[(f.quarter||1)-1];sorted=sorted.filter(k=>{const[yr,mo]=k.split('|');return m.includes(mo)&&(!f.year||String(yr)===String(f.year));});}
+  else if(f.view==='year'&&f.year){sorted=sorted.filter(k=>k.split('|')[0]===String(f.year));}
+  else if(f.view==='month'&&f.month){sorted=sorted.filter(k=>k.split('|')[1]===f.month);}
+  return sorted.map(k=>{
+    const[yr,mo]=k.split('|');
+    const inc=db.income.filter(r=>r.month===mo&&String(r.year)===yr).reduce((s,r)=>s+r.net,0);
+    const exp=db.expenses.filter(r=>r.month===mo&&String(r.year)===yr).reduce((s,r)=>s+r.amount,0);
+    const bud=db.budgets.filter(b=>b.month===mo&&String(b.year)===yr).reduce((s,b)=>s+b.total,0);
+    const d=calcDistribution(Math.max(inc-bud,0));
+    const sv=d?d.famEM+d.persons.reduce((s,p)=>s+p.em+p.chk,0):0;
+    const iv=d?d.famInv+d.persons.reduce((s,p)=>s+p.roth+p.stocks+p.re,0):0;
+    const label=mo.slice(0,3)+(f.view==='all'||f.view==='year'?'':' \''+yr.slice(2));
+    return{label,income:inc,expenses:exp,savings:sv+iv};
+  });
+}
+
+/* CHARTS */
+let _pie=null,_bar=null,_line=null;
+let _activeChart='pie';
+let _lineToggles={income:true,expenses:true,savings:true};
+const C_INC='#1D6A2C',C_EXP='#C0392B',C_SAV='#1A4B7C';
+const C_INC_A='rgba(29,106,44,0.12)',C_EXP_A='rgba(192,57,43,0.12)',C_SAV_A='rgba(26,75,124,0.12)';
+
+function switchChart(type){
+  _activeChart=type;
+  ['pie','bar','line'].forEach(t=>{
+    document.getElementById(t+'-wrap').style.display=t===type?'':'none';
+    const tab=document.getElementById('ctab-'+t);
+    if(tab)tab.classList.toggle('active',t===type);
+  });
+  buildCharts();
+}
+
+function buildCharts(){
+  const f=getSummaryFilter();
+  const series=buildTimeSeries(f);
+  const labels=series.map(s=>s.label);
+  const incData=series.map(s=>Math.round(s.income*100)/100);
+  const expData=series.map(s=>Math.round(s.expenses*100)/100);
+  const savData=series.map(s=>Math.round(s.savings*100)/100);
+  function fmtTick(v){return v>=1000?'$'+(v/1000).toFixed(0)+'k':'$'+v;}
+  const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fmt(ctx.parsed.y!==undefined?ctx.parsed.y:ctx.parsed)}}}};
+
+  if(_activeChart==='pie'){
+    const totI=incData.reduce((s,v)=>s+v,0),totE=expData.reduce((s,v)=>s+v,0),totS=savData.reduce((s,v)=>s+v,0);
+    if(_pie){_pie.destroy();_pie=null;}
+    _pie=new Chart(document.getElementById('pieChart'),{
+      type:'doughnut',
+      data:{labels:['Income','Expenses','Savings & Investment'],datasets:[{data:[totI,totE,totS],backgroundColor:[C_INC,C_EXP,C_SAV],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+      options:{...baseOpts,cutout:'60%',plugins:{...baseOpts.plugins,tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+fmt(ctx.parsed)+' ('+((ctx.parsed/Math.max(totI+totE+totS,0.01))*100).toFixed(1)+'%)'}}}}
+    });
+    const tot=totI+totE+totS;
+    document.getElementById('chart-controls').innerHTML='<div style="font-size:12px;color:var(--t2)">Totals for the selected period</div>';
+    document.getElementById('chart-legend').innerHTML=[[C_INC,'Income',totI],[C_EXP,'Expenses',totE],[C_SAV,'Savings & Investment',totS]].map(([c,l,v])=>`<span style="display:flex;align-items:center;gap:5px"><span class="leg-dot" style="background:${c}"></span><span>${l}: <strong>${fmt(v)}</strong>${tot>0?' ('+((v/tot)*100).toFixed(1)+'%)':''}</span></span>`).join('');
+  } else if(_activeChart==='bar'){
+    if(_bar){_bar.destroy();_bar=null;}
+    _bar=new Chart(document.getElementById('barChart'),{
+      type:'bar',
+      data:{labels,datasets:[{label:'Income',data:incData,backgroundColor:C_INC,borderRadius:4,borderSkipped:false},{label:'Expenses',data:expData,backgroundColor:C_EXP,borderRadius:4,borderSkipped:false},{label:'Savings & Inv.',data:savData,backgroundColor:C_SAV,borderRadius:4,borderSkipped:false}]},
+      options:{...baseOpts,scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{ticks:{callback:fmtTick,font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}}}}
+    });
+    document.getElementById('chart-controls').innerHTML='';
+    document.getElementById('chart-legend').innerHTML=[[C_INC,'Income'],[C_EXP,'Expenses'],[C_SAV,'Savings & Investment']].map(([c,l])=>`<span style="display:flex;align-items:center;gap:5px"><span class="leg-dot" style="background:${c}"></span><span>${l}</span></span>`).join('');
+  } else if(_activeChart==='line'){
+    document.getElementById('chart-controls').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">${[['income',C_INC,'Income'],['expenses',C_EXP,'Expenses'],['savings',C_SAV,'Savings & Investment']].map(([k,c,l])=>`<button onclick="toggleLine('${k}')" id="lt-${k}" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;border:1.5px solid ${c};background:${_lineToggles[k]?c:'transparent'};color:${_lineToggles[k]?'#fff':c};font-size:12px;font-weight:500;cursor:pointer;font-family:var(--ff);transition:all .15s">${l}</button>`).join('')}</div>`;
+    if(_line){_line.destroy();_line=null;}
+    const ds=[];
+    if(_lineToggles.income)ds.push({label:'Income',data:incData,borderColor:C_INC,backgroundColor:C_INC_A,borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.3,fill:true});
+    if(_lineToggles.expenses)ds.push({label:'Expenses',data:expData,borderColor:C_EXP,backgroundColor:C_EXP_A,borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.3,fill:true});
+    if(_lineToggles.savings)ds.push({label:'Savings & Inv.',data:savData,borderColor:C_SAV,backgroundColor:C_SAV_A,borderWidth:2,pointRadius:4,pointHoverRadius:6,tension:0.3,fill:true});
+    _line=new Chart(document.getElementById('lineChart'),{
+      type:'line',
+      data:{labels,datasets:ds},
+      options:{...baseOpts,interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{ticks:{callback:fmtTick,font:{size:11}},grid:{color:'rgba(0,0,0,0.06)'}}}}
+    });
+    document.getElementById('chart-legend').innerHTML='';
+  }
+}
+function toggleLine(key){_lineToggles[key]=!_lineToggles[key];if(_activeChart==='line')buildCharts();}
+
+function renderSummary(){
+  const f=getSummaryFilter();
+  const inc=filterByPeriod(db.income,f);
+  const exp=filterByPeriod(db.expenses,f);
+  const bud=filterByPeriod(db.budgets,f);
+  const totNet=inc.reduce((s,r)=>s+r.net,0);
+  const totExp=exp.reduce((s,r)=>s+r.amount,0);
+  const totBud=bud.reduce((s,b)=>s+b.total,0);
+  const leftover=totNet-totBud;
+  const d=leftover>0?calcDistribution(leftover):null;
+  let saved=0,invested=0;
+  if(d){saved=d.famEM+d.persons.reduce((s,p)=>s+p.em+p.chk,0);invested=d.famInv+d.persons.reduce((s,p)=>s+p.roth+p.stocks+p.re,0);}
+  document.getElementById('summary-cards').innerHTML=`<div class="sum-grid"><div class="sum-card"><div class="sum-lbl">Total income</div><div class="sum-val">${fmt(totNet)}</div></div><div class="sum-card"><div class="sum-lbl">Total budget</div><div class="sum-val">${fmt(totBud)}</div></div><div class="sum-card"><div class="sum-lbl">Total expenses</div><div class="sum-val">${fmt(totExp)}</div><div class="sum-sub" style="color:${totExp>totBud?'var(--danger)':'var(--success)'}"> ${totBud?pct((totExp/totBud)*100)+' of budget':''}</div></div><div class="sum-card"><div class="sum-lbl">Amount saved</div><div class="sum-val pos">${d?fmt(saved):'—'}</div><div class="sum-sub">${d&&totNet?pct(saved/totNet*100)+' of income':'No leftover'}</div></div><div class="sum-card"><div class="sum-lbl">Amount invested</div><div class="sum-val pos">${d?fmt(invested):'—'}</div><div class="sum-sub">${d&&totNet?pct(invested/totNet*100)+' of income':'No leftover'}</div></div></div>`;
+  const hasData=db.income.length>0||db.expenses.length>0;
+  document.getElementById('charts-section').style.display=hasData?'':'none';
+  if(hasData)buildCharts();
+}
+
+/* EXPORT */
+function exportExcel(){
+  const fm=document.getElementById('ex-month').value,fy=document.getElementById('ex-year').value;
+  let inc=db.income,exp=db.expenses,bud=db.budgets;
+  if(fm){inc=inc.filter(r=>r.month===fm);exp=exp.filter(r=>r.month===fm);bud=bud.filter(b=>b.month===fm);}
+  if(fy){inc=inc.filter(r=>String(r.year)===String(fy));exp=exp.filter(r=>String(r.year)===String(fy));bud=bud.filter(b=>String(b.year)===String(fy));}
+  const wb=XLSX.utils.book_new();
+  const srt=arr=>[...arr].sort((a,b)=>String(a.year).localeCompare(String(b.year))||MONTHS.indexOf(a.month)-MONTHS.indexOf(b.month));
+  const iD=[['Month','Year','Person','Source','Description','Net ($)']];
+  srt(inc).forEach(r=>iD.push([r.month,r.year,r.person,r.source,r.desc||'',r.net]));
+  iD.push(['','','','','TOTAL',inc.reduce((s,r)=>s+r.net,0)]);
+  const wsI=XLSX.utils.aoa_to_sheet(iD);wsI['!cols']=[14,8,12,14,24,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,wsI,'Income');
+  const eD=[['Month','Year','Category','Description','Paid by','Account','Amount ($)']];
+  srt(exp).forEach(r=>eD.push([r.month,r.year,r.category,r.desc||'',r.who,r.account,r.amount]));
+  eD.push(['','','','','','TOTAL',exp.reduce((s,r)=>s+r.amount,0)]);
+  const wsE=XLSX.utils.aoa_to_sheet(eD);wsE['!cols']=[14,8,14,26,12,14,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,wsE,'Expenses');
+  if(bud.length){const bD=[['Month','Year',...CATS,'Total']];srt(bud).forEach(b=>bD.push([b.month,b.year,...CATS.map(c=>b[c]||0),b.total]));const wsB=XLSX.utils.aoa_to_sheet(bD);wsB['!cols']=[14,8,...CATS.map(()=>12),12].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,wsB,'Budget');}
+  const tN=inc.reduce((s,r)=>s+r.net,0),tB=bud.reduce((s,b)=>s+b.total,0),lo=tN-tB;
+  if(lo>0){
+    const d=calcDistribution(lo);
+    const dD=[['Destination','Who','Amount ($)','% of Income','% of Leftover']];
+    [['Emergency Fund','Family',d.famEM],['Investment pool','Family',d.famInv],...d.persons.flatMap(p=>[['Black Tax',p.person,p.blackTax],['Stocks',p.person,p.stocks],['ROTH IRA',p.person,p.roth],['Giving',p.person,p.giving],['Emergency Fund',p.person,p.em],['Real Estate',p.person,p.re],['Checking Account',p.person,p.chk]])].forEach(([dest,who,amt])=>dD.push([dest,who,+amt.toFixed(2),tN?+(amt/tN*100).toFixed(2):0,+(amt/lo*100).toFixed(2)]));
+    dD.push(['TOTAL','',+d.totalAlloc.toFixed(2),tN?+(d.totalAlloc/tN*100).toFixed(2):0,+(d.totalAlloc/lo*100).toFixed(2)]);
+    const wsD=XLSX.utils.aoa_to_sheet(dD);wsD['!cols']=[22,14,14,14,16].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb,wsD,'Distribution');
+  }
+  const tE=exp.reduce((s,r)=>s+r.amount,0),d2=lo>0?calcDistribution(lo):null;
+  const sD=[['FINANCE SUMMARY'],[],['Total Income','',tN],['Total Budget','',tB],['Total Expenses','',tE],['Net Savings','',tN-tE],...(d2?[['Amount Saved','',d2.famEM+d2.persons.reduce((s,p)=>s+p.em+p.chk,0)],['Amount Invested','',d2.famInv+d2.persons.reduce((s,p)=>s+p.roth+p.stocks+p.re,0)]]:[] )];
+  const wsS=XLSX.utils.aoa_to_sheet(sD);wsS['!cols']=[28,8,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,wsS,'Summary');
+  XLSX.writeFile(wb,`FinanceHub_${fm||'All'}_${fy||'All'}.xlsx`);
+  closeModal('export-modal');showToast('Downloaded');
+}
+
+/* INIT */
+function init(){
+  const cy=new Date().getFullYear(),cm=MONTHS[new Date().getMonth()];
+  buildYears('ob-year',cy);buildYears('e-year',cy);
+  buildMonths('ob-month');buildMonths('e-month');
+  document.getElementById('ob-month').value=cm;
+  document.getElementById('e-month').value=cm;
+  ['ef-month','df-month','sf-month','ex-month'].forEach(id=>buildMonths(id));
+  ['ef-year','df-year','sf-year','ex-year'].forEach(id=>addYearsFilter(id));
+}
+
+// ── FIREBASE REALTIME SYNC ─────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDQunH4MCLC-TvzJ0aF__v45sHhFBavHW8",
+  authDomain: "eeyoowo.firebaseapp.com",
+  databaseURL: "https://eeyoowo-default-rtdb.firebaseio.com",
+  projectId: "eeyoowo",
+  storageBucket: "eeyoowo.firebasestorage.app",
+  messagingSenderId: "584454146486",
+  appId: "1:584454146486:web:fdd786aa27a11dedc99917"
+};
+
+firebase.initializeApp(firebaseConfig);
+const fbdb = firebase.database();
+const FB_PATH = 'financehub/data';
+let _booted = false;
+let _lastPushed = '';
+
+// ── Sync status badge ──────────────────────────────────────────
+function setSyncStatus(s){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  const map = {
+    syncing: ['↑ Syncing...', '#D97706'],
+    synced:  ['✓ Synced',     '#1D6A2C'],
+    offline: ['⚠ Offline — saved locally', '#C0392B'],
+    loading: ['↓ Loading...', '#1A4B7C'],
+    error:   ['✗ Sync error', '#C0392B']
+  };
+  const [text, color] = map[s] || map.synced;
+  el.textContent = text;
+  el.style.color  = color;
+}
+
+// ── Push db to Firebase ────────────────────────────────────────
+function pushToFirebase(){
+  const payload = JSON.parse(JSON.stringify(db)); // deep clone, no undefined
+  _lastPushed = JSON.stringify(payload);
+  setSyncStatus('syncing');
+  fbdb.ref(FB_PATH).set(payload)
+    .then(()  => setSyncStatus('synced'))
+    .catch(err => {
+      console.error('Firebase write failed:', err);
+      setSyncStatus('error');
+    });
+}
+
+// ── Override save() to also push to Firebase ──────────────────
+const _origSave = save;
+function save(){
+  _origSave();           // always save to localStorage first
+  pushToFirebase();      // then push to Firebase
+}
+
+// ── Re-render whichever tab is open ───────────────────────────
+function reRenderActive(){
+  renderPills();
+  const ap = document.querySelector('.panel.active');
+  if(!ap) return;
+  const t = ap.id.replace('panel-', '');
+  if(t === 'overview')     { refreshOverview(); }
+  if(t === 'expense')      { renderCatBars(); renderExpenseTable(); }
+  if(t === 'distribution') { renderAllocSettings(); renderDistribution(); }
+  if(t === 'summary')      { renderSummary(); }
+}
+
+// ── Live listener — fires on ANY remote change ─────────────────
+function startLiveListener(){
+  fbdb.ref(FB_PATH).on('value', snapshot => {
+    const remote = snapshot.val();
+    if(!remote) return;
+    const remoteStr = JSON.stringify(remote);
+    // Skip if this is data we just pushed ourselves
+    if(remoteStr === _lastPushed) return;
+    // Skip if identical to current db
+    if(remoteStr === JSON.stringify(db)) return;
+    // Apply remote data
+    db = remote;
+    if(!db.checks)       db.checks       = {};
+    if(!db.distPeople)   db.distPeople   = [...(db.people||[])];
+    if(!db.allocSettings)db.allocSettings= {...DEF_ALLOC};
+    try{ localStorage.setItem(SK, JSON.stringify(db)); }catch(e){}
+    setSyncStatus('synced');
+    if(_booted) reRenderActive();
+  });
+}
+
+// ── Boot sequence ──────────────────────────────────────────────
+function bootUI(){
+  init();
+  setPerson(db.people[0] || 'Maia');
+  renderPills();
+  refreshOverview();
+  _booted = true;
+}
+
+function bootFromLocal(){
+  // Use whatever is in localStorage / seed as fallback
+  load();
+  bootUI();
+}
+
+setSyncStatus('loading');
+
+fbdb.ref(FB_PATH).once('value')
+  .then(snapshot => {
+    const remote = snapshot.val();
+    if(remote){
+      // Firebase has data — use it
+      db = remote;
+      if(!db.checks)       db.checks       = {};
+      if(!db.distPeople)   db.distPeople   = [...(db.people||[])];
+      if(!db.allocSettings)db.allocSettings= {...DEF_ALLOC};
+      // Merge any seed entries not already present
+      const eii = new Set(db.income.map(x=>x.id));
+      SEED_DATA.income.forEach(x=>{ if(!eii.has(x.id)) db.income.push(x); });
+      const eei = new Set(db.expenses.map(x=>x.id));
+      SEED_DATA.expenses.forEach(x=>{ if(!eei.has(x.id)) db.expenses.push(x); });
+      const ebi = new Set(db.budgets.map(x=>x.id));
+      SEED_DATA.budgets.forEach(x=>{ if(!ebi.has(x.id)) db.budgets.push(x); });
+      try{ localStorage.setItem(SK, JSON.stringify(db)); }catch(e){}
+    } else {
+      // First ever load — seed Firebase with existing data
+      load(); // loads from localStorage or seed
+      const payload = JSON.parse(JSON.stringify(db));
+      _lastPushed = JSON.stringify(payload);
+      fbdb.ref(FB_PATH).set(payload)
+        .catch(err => console.error('Initial seed failed:', err));
+    }
+    setSyncStatus('synced');
+    bootUI();
+    startLiveListener();
+  })
+  .catch(err => {
+    // Firebase unreachable — work offline
+    console.warn('Firebase unavailable, working offline:', err);
+    setSyncStatus('offline');
+    bootFromLocal();
+    // Keep retrying every 10 seconds
+    const retry = setInterval(()=>{
+      fbdb.ref(FB_PATH).once('value')
+        .then(snapshot => {
+          clearInterval(retry);
+          const remote = snapshot.val();
+          if(remote){
+            db = remote;
+            if(!db.checks)       db.checks       = {};
+            if(!db.distPeople)   db.distPeople   = [...(db.people||[])];
+            if(!db.allocSettings)db.allocSettings= {...DEF_ALLOC};
+            try{ localStorage.setItem(SK, JSON.stringify(db)); }catch(e){}
+          }
+          setSyncStatus('synced');
+          reRenderActive();
+          startLiveListener();
+        })
+        .catch(()=>{}); // still offline, keep retrying
+    }, 10000);
+  });
+
+</script>
+</body>
+</html>
