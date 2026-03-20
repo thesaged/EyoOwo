@@ -1,2 +1,0 @@
-# EyoOwo
-Finance Manager
