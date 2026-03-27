@@ -686,7 +686,7 @@ function renderOvIncomeTable(){
   const tw=document.getElementById('income-tbl'),em=document.getElementById('income-empty-msg'),tb=document.getElementById('income-tbody');
   if(!rows.length){tw.style.display='none';em.style.display='';return;}
   tw.style.display='';em.style.display='none';
-  tb.innerHTML=rows.map(r=>`<tr><td style="white-space:nowrap">${typeof fmtDate==='function'?fmtDate(r.date):r.date||r.month+' '+r.year}</td><td><strong>${r.person}</strong></td><td>${r.source}</td><td class="mu">${r.desc||'—'}</td><td class="num">${fmt(r.net)}</td><td><button class="btn btn-d" onclick="delIncome(${r.id})">Remove</button></td></tr>`).join('');
+  tb.innerHTML=rows.map(r=>`<tr><td style="white-space:nowrap">${typeof fmtDate==='function'?fmtDate(r.date):r.date||r.month+' '+r.year}</td><td><strong>${r.person}</strong></td><td>${r.source}</td><td class="mu">${r.desc||'—'}</td><td class="num">${fmt(r.net)}</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:12px;color:var(--accent)" onclick="dupIncome(${r.id})">Copy</button> <button class="btn btn-d" onclick="delIncome(${r.id})">Remove</button></td></tr>`).join('');
 }
 
 /* PEOPLE */
@@ -741,10 +741,11 @@ function saveIncome(){
   const iDateEl=document.getElementById('i-date');
   const iDate=iDateEl&&iDateEl.value?iDateEl.value:'';
   db.income.push({id:Date.now(),month,year,date:iDate,person:curPerson,source:document.getElementById('i-source').value,desc:document.getElementById('i-desc').value||'',net});
-  save();document.getElementById('i-net').value='';document.getElementById('i-desc').value='';if(iDateEl)iDateEl.value='';
+  save();document.getElementById('i-net').value='';document.getElementById('i-desc').value='';if(iDateEl)iDateEl.value=new Date().toISOString().slice(0,10);
   showToast('Income logged for '+curPerson);renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();
 }
 function delIncome(id){if(!confirm('Remove?'))return;db.income=db.income.filter(r=>r.id!==id);save();renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();}
+function dupIncome(id){const src=db.income.find(r=>r.id===id);if(!src)return;db.income.push(Object.assign({},src,{id:Date.now()}));save();showToast('Income entry duplicated');renderOvPersonStrip();renderOvIncomeTable();renderCarryBanner();}
 
 /* EXPENSE */
 function saveExpense(){
@@ -827,10 +828,11 @@ function renderExpenseTable(){
   w.style.display='';em.style.display='none';
   const rowTotal=rows.reduce((s,r)=>s+r.amount,0);
   function fmtDate(d){if(!d)return'—';try{const[y,m,day]=d.split('-');return day+'/'+m+'/'+y.slice(2);}catch{return d;}}
-  tb.innerHTML=rows.map(r=>`<tr><td style="white-space:nowrap">${fmtDate(r.date)||r.month+' '+r.year}</td><td><span style="background:var(--surface2);color:var(--t2);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${r.category}</span></td><td>${r.desc||'—'}</td><td>${r.who}</td><td>${r.account}</td><td class="num">${fmt(r.amount)}</td><td><button class="btn btn-d" onclick="delExpense(${r.id})">Remove</button></td></tr>`).join('')+
+  tb.innerHTML=rows.map(r=>`<tr><td style="white-space:nowrap">${fmtDate(r.date)||r.month+' '+r.year}</td><td><span style="background:var(--surface2);color:var(--t2);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${r.category}</span></td><td>${r.desc||'—'}</td><td>${r.who}</td><td>${r.account}</td><td class="num">${fmt(r.amount)}</td><td style="white-space:nowrap"><button class="btn" style="padding:4px 8px;font-size:12px;color:var(--accent)" onclick="dupExpense(${r.id})">Copy</button> <button class="btn btn-d" onclick="delExpense(${r.id})">Remove</button></td></tr>`).join('')+
   `<tr style="background:var(--surface2);font-weight:600"><td colspan="6" style="padding:9px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--t3)">Total (${rows.length} item${rows.length===1?'':'s'})</td><td class="num" style="color:var(--text)">${fmt(rowTotal)}</td><td></td></tr>`;
 }
 function delExpense(id){if(!confirm('Remove?'))return;db.expenses=db.expenses.filter(r=>r.id!==id);save();renderCatBars();renderExpenseTable();renderCarryBanner();}
+function dupExpense(id){const src=db.expenses.find(r=>r.id===id);if(!src)return;db.expenses.push(Object.assign({},src,{id:Date.now()}));save();showToast('Expense entry duplicated');renderCatBars();renderExpenseTable();renderCarryBanner();}
 
 /* DISTRIBUTION CALC */
 function getAlloc(month,year){
@@ -1303,6 +1305,9 @@ function loadAdminBudget(){
 function init(){
   const cy=new Date().getFullYear(),cm=MONTHS[new Date().getMonth()];
   const cys=String(cy);
+  const todayStr=new Date().toISOString().slice(0,10);
+  const iDateEl=document.getElementById('i-date');if(iDateEl)iDateEl.value=todayStr;
+  const eDateEl=document.getElementById('e-date');if(eDateEl)eDateEl.value=todayStr;
   // Income page
   buildYears('ob-year',cy);buildMonths('ob-month');
   document.getElementById('ob-month').value=cm;
